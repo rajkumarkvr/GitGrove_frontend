@@ -8,3 +8,7 @@ const axiosInstance = axios.create({
   },
 });
 export default axiosInstance;
+
+// axios.get("https://jsonplaceholder.typicode.com/posts", {
+//   params: { userId: 1 }
+// })
