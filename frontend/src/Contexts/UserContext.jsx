@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import useLocalStorage from "../CustomHooks/OwnLocalStorage";
 
 const UserContext = createContext(null);
 
@@ -8,9 +9,9 @@ export const useUserProfile = () => {
 };
 function UserContextProvider({ children }) {
   const [currentUser, setCurrentUser] = useState({});
-
+  const [storedValue] = useLocalStorage("_user", "");
   useEffect(() => {
-    setCurrentUser(JSON.parse(localStorage.getItem("_user") || null));
+    setCurrentUser(storedValue);
   }, []);
   return (
     <UserContext.Provider value={{ currentUser, setCurrentUser }}>

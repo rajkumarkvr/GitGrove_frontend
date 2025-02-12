@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://192.168.43.216:8080/GitGrove",
+  baseURL: "http://localhost:8080/GitGrove",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

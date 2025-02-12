@@ -8,6 +8,12 @@ import ThemeSettings from "./Pages/Settings/Theme/ThemeSettings";
 import ProfileSettings from "./Pages/Settings/ProfileSettings/ProfileSettings";
 import AccountSettings from "./Pages/Settings/AccountSettings/AccountSettings";
 import CreateRepo from "./Pages/CreateRepo/CreateRepo";
+import Register from "./Pages/Register/Register";
+import Login from "./Pages/Login/Login";
+import ResetPassword from "./Pages/ResetPassword/ResetPassword";
+import MainPasswordReset from "./Pages/ResetPassword/MainPasswordReset";
+import MyRepository from "./Pages/Repository/MyRepository";
+import RepositoryDetails from "./Pages/Repository/RepositoryDetails";
 // import HomeIcon from "@mui/icons-material/Home";
 //1 unit = 8px by default in MUI
 
@@ -18,7 +24,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/repositories" replace />} />
         <Route path="/" element={<Dashboard toggleTheme={toggleTheme} />}>
-          <Route index path="repositories" element={<h1>Repos</h1>} />
+          <Route index path="repositories" element={<MyRepository />} />
+          <Route path="/repo/:id" element={<RepositoryDetails />} />
           <Route path="explore" element={<h1>Explore</h1>} />
           <Route path="create-repo" element={<CreateRepo />} />
           <Route path="starred" element={<h1>Starred</h1>} />
@@ -40,6 +47,13 @@ function App() {
             <Route path="account" element={<AccountSettings />} />
           </Route>
         </Route>
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/auth/main-reset-password/:token"
+          element={<MainPasswordReset />}
+        />
       </Routes>
     </BrowserRouter>
   );
