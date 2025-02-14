@@ -62,6 +62,7 @@ const FileEditor = ({ file }) => {
           minWidth: "1000px",
           maxWidth: "1200px", // Set a max width for better responsiveness
           margin: "auto",
+          minHeight: "800px",
         }}
       >
         {/* Header with animations */}
@@ -125,7 +126,7 @@ const FileEditor = ({ file }) => {
               overflow: "hidden",
               height: "400px", // Fixed height for consistency
               maxHeight: "50vh", // Ensures responsiveness on smaller screens
-              minHeight: "300px", // Prevents collapsing
+              minHeight: "800px", // Prevents collapsing
               display: "flex",
               flexDirection: "column",
               border: "1px solid rgba(0, 0, 0, 0.1)",

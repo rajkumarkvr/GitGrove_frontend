@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, AppBar, Toolbar } from "@mui/material";
+import {
+  Box,
+  Typography,
+  AppBar,
+  Toolbar,
+  Skeleton,
+  List,
+  ListItem,
+} from "@mui/material";
 import FileExplorer from "./FileExplorer";
 import FileEditor from "./FileEditor";
 import BranchSelector from "./BranchSelector";
@@ -11,30 +19,27 @@ const RepositoryFileView = ({ username, selectedBranch, onBranchChange }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [repos, setRepos] = useState({});
   const { repo } = useParams();
+  const [loading, setLoading] = useState(true); // Start loading as true
 
-  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const fetchRepoInfo = async () => {
       setLoading(true); // Start loading spinner before fetching data
-      console.log("Fetching");
-      console.log(repo);
       const usrinfo = getCurrentUser();
       try {
         const response = await axiosInstance.get(
           `/repo-info?username=${usrinfo.username}&reponame=${repo}`
         );
         setRepos(response.data);
-        setLoading(false); // Stop loading spinner after fetching data
-        console.log(response.data);
       } catch (error) {
-        setLoading(false); // Stop loading spinner after fetching data
         console.log(error);
+      } finally {
+        setLoading(false); // Stop loading spinner after fetching data
       }
     };
 
     fetchRepoInfo();
-    fetchRepoInfo();
   }, []);
+
   return (
     <Box
       sx={{
@@ -44,36 +49,72 @@ const RepositoryFileView = ({ username, selectedBranch, onBranchChange }) => {
         flexDirection: "column",
       }}
     >
-      <BranchSelector
-        branches={repos.branches}
-        onBranchChange={onBranchChange}
-        selectedBranch={selectedBranch}
-      />
-      {/*  Header with Repository Name */}
+      {/* Branch Selector */}
+      {loading ? (
+        <Skeleton variant="rectangular" height={40} sx={{ mb: 1 }} />
+      ) : (
+        <BranchSelector
+          branches={repos.branches}
+          onBranchChange={onBranchChange}
+          selectedBranch={selectedBranch}
+        />
+      )}
+
+      {/* Header with Repository Name */}
       <AppBar color="default" position="fixed" sx={{ paddingLeft: "240px" }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1, color: "#333" }}>
-            {username} / {repo}
-          </Typography>
+          {loading ? (
+            <Skeleton variant="text" width={200} height={30} />
+          ) : (
+            <Typography variant="h6" sx={{ flexGrow: 1, color: "#333" }}>
+              {username} / {repo}
+            </Typography>
+          )}
         </Toolbar>
       </AppBar>
 
-      {/*  Main Content (FileExplorer + FileEditor) */}
+      {/* Main Content (File Explorer + File Editor) */}
       <Box sx={{ display: "flex", flexGrow: 1, height: "calc(100vh - 64px)" }}>
-        {/*  File Explorer */}
+        {/* File Explorer (Left Side) */}
         <Box
           sx={{
             width: "30%",
             borderRight: "1px solid #ddd",
             overflowY: "auto",
+            p: 2,
           }}
         >
-          <FileExplorer files={repos.files} onFileSelect={setSelectedFile} />
+          {loading ? (
+            // Skeleton Loader for File Explorer
+            <List>
+              {Array.from({ length: 6 }).map((_, index) => (
+                <ListItem key={index}>
+                  <Skeleton
+                    variant="circular"
+                    width={24}
+                    height={24}
+                    sx={{ mr: 1 }}
+                  />
+                  <Skeleton variant="text" width="80%" />
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <FileExplorer files={repos.files} onFileSelect={setSelectedFile} />
+          )}
         </Box>
 
-        {/*  File Editor */}
+        {/* File Editor (Right Side) */}
         <Box sx={{ flexGrow: 1, p: 2, overflow: "auto" }}>
-          <FileEditor file={selectedFile} />
+          {loading ? (
+            // Skeleton Loader for File Editor
+            <Box>
+              <Skeleton variant="text" width="60%" height={40} sx={{ mb: 2 }} />
+              <Skeleton variant="rectangular" width="100%" height="80vh" />
+            </Box>
+          ) : (
+            <FileEditor file={selectedFile} />
+          )}
         </Box>
       </Box>
     </Box>
