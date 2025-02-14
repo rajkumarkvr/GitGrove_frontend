@@ -1,96 +1,76 @@
-import React, { useState } from "react";
-import { Box } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Box, Button } from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
 import RepositoryHeader from "./RepositoryHeader";
-import BranchList from "./BranchList";
+import BranchSelector from "./BranchSelector";
 import CommitList from "./CommitList";
-import FileExplorer from "./FileExplorer";
-import FileEditor from "./FileEditor";
+import FileList from "./FileList";
+import getCurrentUser from "../../Contexts/getCurrentUser";
+import axiosInstance from "../../axiosInstance";
+import Loading from "../../Components/Loading";
 
-const repo = {
-  name: "SampleRepo",
-  sshUrl: "git@github.com:user/SampleRepo.git",
-  branches: ["main", "develop", "feature-branch"],
-  defaultBranch: "main",
-  commits: [
-    { id: "c1", message: "Initial commit", date: "2025-02-10T12:00:00Z" },
-    { id: "c2", message: "Added login feature", date: "2025-02-11T15:30:00Z" },
-    { id: "c3", message: "Fixed navbar issue", date: "2025-02-12T09:45:00Z" },
-  ],
-  files: [
-    {
-      name: "src",
-      type: "folder",
-      children: [
-        {
-          name: "components",
-          type: "folder",
-          children: [
-            {
-              name: "Header.js",
-              type: "file",
-              content: "export const Header = () => <header>Header</header>;",
-            },
-            {
-              name: "Footer.js",
-              type: "file",
-              content: "export const Footer = () => <footer>Footer</footer>;",
-            },
-          ],
-        },
-        {
-          name: "App.js",
-          type: "file",
-          content:
-            "import React from 'react'; function App() { return <div>Hello World</div>; } export default App;",
-        },
-        {
-          name: "index.js",
-          type: "file",
-          content:
-            "import ReactDOM from 'react-dom'; import App from './App'; ReactDOM.render(<App />, document.getElementById('root'));",
-        },
-      ],
-    },
-    {
-      name: "public",
-      type: "folder",
-      children: [
-        {
-          name: "index.html",
-          type: "file",
-          content:
-            "<!DOCTYPE html><html><head><title>Sample</title></head><body><div id='root'></div></body></html>",
-        },
-      ],
-    },
-    {
-      name: "README.md",
-      type: "file",
-      content: "# SampleRepo\nThis is a sample repository for testing.",
-    },
-    {
-      name: ".gitignore",
-      type: "file",
-      content: "node_modules/\nbuild/\n.env",
-    },
-  ],
-};
+const RepositoryDetails = ({ onBranchChange }) => {
+  const navigate = useNavigate(); // For navigation
+  const { id } = useParams();
+  const [repo, setRepos] = useState({});
+  const currentUserobj = getCurrentUser();
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const fetchRepoInfo = async () => {
+      setLoading(true); // Start loading spinner before fetching data
+      console.log("Fetching");
+      const usrinfo = getCurrentUser();
+      try {
+        const response = await axiosInstance.get(
+          `/repo-info?username=${currentUserobj.username}&reponame=${id}`
+        );
+        setRepos(response.data);
+        setLoading(false); // Stop loading spinner after fetching data
+        console.log(response.data);
+      } catch (error) {
+        setLoading(false); // Stop loading spinner after fetching data
+        console.log(error);
+      }
+    };
 
-const RepositoryDetails = () => {
-  const [selectedFile, setSelectedFile] = useState(null);
-
+    fetchRepoInfo();
+  }, []);
   return (
     <Box>
-      <RepositoryHeader repoName={repo.name} sshUrl={repo.sshUrl} />
-      <BranchList
-        branches={repo.branches}
-        selectedBranch={repo.defaultBranch}
+      {/* 🔹 Repository Header */}
+      <RepositoryHeader
+        username={currentUserobj.username}
+        repoName={id}
+        sshUrl={repo.sshUrl}
       />
-      <CommitList commits={repo.commits} />
-      <Box sx={{ display: "flex" }}>
-        <FileExplorer files={repo.files} onFileSelect={setSelectedFile} />
-        <FileEditor file={selectedFile} />
+
+      {loading && <Loading />}
+      {/* 🔹 Branch Selector + View Commits Button */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mt: 2,
+        }}
+      >
+        <BranchSelector
+          branches={repo.branches}
+          selectedBranch={repo.defaultBranch}
+          onBranchChange={onBranchChange}
+        />
+
+        {/* 📝 View Commits Button */}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/repo/1/commits")}
+        >
+          View Commits
+        </Button>
       </Box>
+
+      <FileList files={repo.mainFiles} reponame={id}/>
     </Box>
   );
 };

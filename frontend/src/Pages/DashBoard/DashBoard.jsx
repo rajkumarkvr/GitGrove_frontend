@@ -24,6 +24,7 @@ import {
   CompareArrows,
 } from "@mui/icons-material";
 import { useTheme } from "@emotion/react";
+import getCurrentUser from "../../Contexts/getCurrentUser";
 
 const drawerWidth = 240;
 const dashBoardItems = [
@@ -40,6 +41,7 @@ const dashBoardItems = [
 ];
 const Dashboard = ({ toggleTheme }) => {
   const theme = useTheme();
+  const currentUser = getCurrentUser();
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -84,6 +86,10 @@ const Dashboard = ({ toggleTheme }) => {
               GitGrove
             </Typography>
           </Box>
+          <img
+            src={currentUser.profile_url}
+            style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+          />
         </Toolbar>
         <List
           sx={{

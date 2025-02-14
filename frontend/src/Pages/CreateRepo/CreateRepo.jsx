@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -16,15 +16,24 @@ import {
 import axiosInstance from "../../axiosInstance";
 import { useUserProfile } from "../../Contexts/UserContext";
 import Loading from "../../Components/Loading";
+import { useNavigate } from "react-router-dom";
 const CreateRepo = () => {
-  const [username, setUsername] = useState("Rajkumar");
+  const { currentUser, setCurrentUser } = useUserProfile();
+  const [username, setUsername] = useState(currentUser.username);
+  useEffect(() => {
+    setUsername(JSON.parse(localStorage.getItem("_user"))["username"]);
+    // console.log(currentUser);
+  }, []);
+
   const [repoName, setRepoName] = useState("");
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState("public");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [errorSnackbar, setErrorSnackbar] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { currentUser, setCurrentUser } = useUserProfile();
+
+  const navigate = useNavigate();
+
   const handleCreateRepo = () => {
     console.log("Repository Created:", {
       username,
@@ -52,7 +61,7 @@ const CreateRepo = () => {
           `/CreateRepoServlet`,
           repoInfo
         );
-
+        navigate("/repositories");
         console.log(response.data);
         setLoading(false);
         setOpenSnackbar(true); // Show success message

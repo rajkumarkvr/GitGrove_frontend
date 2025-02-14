@@ -15,23 +15,67 @@ import {
   Stack,
   AppBar,
   Toolbar,
-  Menu,
-  MenuItem as MuiMenuItem,
   useTheme,
   useMediaQuery,
+  Button,
 } from "@mui/material";
+import StarIcon from "@mui/icons-material/Star";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import StarBorderIcon from "@mui/icons-material/StarBorder";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import DeleteIcon from "@mui/icons-material/Delete";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../../axiosInstance";
 import getCurrentUser from "../../Contexts/getCurrentUser";
 import Loading from "../../Components/Loading";
+const dummyStarredRepos = [
+  {
+    id: 1,
+    name: "nextjs-ecommerce",
+    description:
+      "A modern e-commerce platform built with Next.js and Tailwind CSS.",
+    stars: 230,
+    updated: "2024-02-10T14:30:00",
+    created_at: "2023-11-15T10:20:00",
+  },
+  {
+    id: 2,
+    name: "react-chat-app",
+    description:
+      "A real-time chat application using React, Socket.io, and Firebase.",
+    stars: 180,
+    updated: "2024-01-25T18:45:00",
+    created_at: "2023-09-01T08:00:00",
+  },
+  {
+    id: 3,
+    name: "AI-code-helper",
+    description:
+      "An AI-powered tool that assists with writing code efficiently.",
+    stars: 315,
+    updated: "2024-02-05T09:15:00",
+    created_at: "2022-12-20T16:30:00",
+  },
+  {
+    id: 4,
+    name: "open-source-dashboard",
+    description:
+      "An open-source dashboard for monitoring analytics and performance.",
+    stars: 90,
+    updated: "2024-02-08T12:00:00",
+    created_at: "2023-07-10T14:45:00",
+  },
+  {
+    id: 5,
+    name: "machine-learning-experiments",
+    description: "A collection of machine learning models and experiments.",
+    stars: 270,
+    updated: "2024-02-12T20:10:00",
+    created_at: "2023-03-05T09:30:00",
+  },
+];
 
 function getFormattedDateTime(timestamp) {
-  const date = new Date(timestamp + "Z"); // Ensure UTC interpretation
+  const date = new Date(timestamp + "Z");
   date.setHours(date.getHours() - 5);
   date.setMinutes(date.getMinutes() - 30);
 
@@ -46,13 +90,11 @@ function getFormattedDateTime(timestamp) {
   });
 }
 
-const MyRepositories = () => {
-  const [repositories, setRepositories] = useState([]);
+const Starred = () => {
+  const [starredRepos, setStarredRepos] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("updated");
   const [loading, setLoading] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState(null);
-  const [selectedRepo, setSelectedRepo] = useState(null);
   const navigate = useNavigate();
   const theme = useTheme();
   const isDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -61,19 +103,19 @@ const MyRepositories = () => {
     setLoading(true);
     const user = getCurrentUser();
     if (user) {
-      const fetchRepos = async () => {
+      const fetchStarredRepos = async () => {
         try {
           const response = await axiosInstance.get(
-            `/getAllRepositories?username=${user.username}`
+            `/getStarredRepositories?username=${user.username}`
           );
-          setRepositories(response.data.repositories);
+          setStarredRepos(response.data.repositories);
           setLoading(false);
         } catch (error) {
-          console.log(error);
+          console.error("Error fetching starred repos:", error);
           setLoading(false);
         }
       };
-      fetchRepos();
+      fetchStarredRepos();
     } else {
       navigate("/login");
     }
@@ -87,43 +129,21 @@ const MyRepositories = () => {
     setSortBy(event.target.value);
   };
 
-  const handleMenuOpen = (event, repo) => {
-    setMenuAnchor(event.currentTarget);
-    setSelectedRepo(repo);
+  const handleUnstar = (repoId) => {
+    setStarredRepos((prevRepos) =>
+      prevRepos.filter((repo) => repo.id !== repoId)
+    );
   };
 
-  const handleMenuClose = () => {
-    setMenuAnchor(null);
-    setSelectedRepo(null);
-  };
-
-  const handleDelete = () => {
-    console.log(`Deleting repository: ${selectedRepo.name}`);
-    handleMenuClose();
-  };
-
-  const handleStarUpdate = (repoName) => {
-    const updateStar = async () => {
-      try {
-        const response = await axiosInstance.put(`/starRepository`, {
-          username: getCurrentUser().username,
-          repoName: repoName,
-        });
-        console.log(response);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    updateStar();
-  };
-
-  const filteredRepos = repositories
+  const filteredRepos = dummyStarredRepos
     .filter((repo) =>
       repo.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) =>
       sortBy === "stars"
         ? b.stars - a.stars
+        : sortBy === "name"
+        ? a.name.localeCompare(b.name)
         : new Date(b.updated) - new Date(a.updated)
     );
 
@@ -136,28 +156,27 @@ const MyRepositories = () => {
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-around" }}>
           <Typography variant="h5" fontWeight="bold">
-            My Repositories
+            Starred Repositories
           </Typography>
-          <Stack direction="row" spacing={20} alignItems="center">
+          <Stack direction="row" spacing={2} alignItems="center">
             <TextField
-              label="Search Repositories"
+              label="Search Starred Repos"
               variant="outlined"
               size="small"
               value={searchTerm}
               onChange={handleSearchChange}
             />
-            <FormControl size="small">
+            <FormControl size="small" sx={{ minWidth: "100px" }}>
               <InputLabel>Sort By</InputLabel>
               <Select
                 value={sortBy}
                 onChange={handleSortChange}
                 label="Sort By"
-                sx={{
-                  minWidth: 250,
-                }}
+                sx={{ minWidth: "200px" }}
               >
                 <MenuItem value="updated">Last Updated</MenuItem>
                 <MenuItem value="stars">Stars</MenuItem>
+                <MenuItem value="name">Name</MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -200,28 +219,14 @@ const MyRepositories = () => {
                       rowGap: 2,
                     }}
                   >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Typography variant="h6" fontWeight="bold">
-                        {repo.name}
-                      </Typography>
-                      <IconButton onClick={(e) => handleMenuOpen(e, repo)}>
-                        <MoreVertIcon />
-                      </IconButton>
-                    </Box>
-
+                    <Typography variant="h6" fontWeight="bold">
+                      {repo.name}
+                    </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {repo.description || "No description available."}
                     </Typography>
 
-                    <Box
-                      sx={{ mt: 2, display: "flex", flexDirection: "column" }}
-                    >
+                    <Box sx={{ mt: 2 }}>
                       <Typography variant="caption" fontWeight="bold">
                         Last Updated:
                       </Typography>
@@ -255,13 +260,14 @@ const MyRepositories = () => {
                         <VisibilityIcon color="primary" />
                       </IconButton>
                     </Tooltip>
+                    <Tooltip title="Unstar Repository">
+                      <IconButton onClick={() => handleUnstar(repo.id)}>
+                        <RemoveCircleOutlineIcon sx={{ color: "red" }} />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Star Count">
                       <IconButton>
-                        <StarBorderIcon
-                          onClick={() => {
-                            handleStarUpdate(repo.name);
-                          }}
-                        />
+                        <StarIcon sx={{ color: "gold" }} />
                         <Typography variant="body2" sx={{ ml: 0.5 }}>
                           {repo.stars}
                         </Typography>
@@ -273,24 +279,13 @@ const MyRepositories = () => {
             ))
           ) : (
             <Typography variant="h6" textAlign="center" color="text.secondary">
-              No repositories found.
+              You haven't starred any repositories yet.
             </Typography>
           )}
         </Box>
       )}
-
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={handleMenuClose}
-      >
-        <MuiMenuItem onClick={handleDelete}>
-          <DeleteIcon sx={{ mr: 1, color: "red" }} />
-          Delete
-        </MuiMenuItem>
-      </Menu>
     </Container>
   );
 };
 
-export default MyRepositories;
+export default Starred;

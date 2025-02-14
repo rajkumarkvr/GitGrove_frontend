@@ -24,6 +24,7 @@ const Register = () => {
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [storedValue, setStoredValue] = useLocalStorage("_user", {});
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -43,12 +44,13 @@ const Register = () => {
         try {
           const response = await axiosInstance.post("/auth/register", user);
           console.log(response.data);
-
+          setStoredValue(response.data.user);
           setLoading(false);
           navigate("/");
         } catch (error) {
+          console.log(error.response.data.error);
           setLoading(false);
-          setErrors({ global: "Failed to register user" });
+          setErrors({ global: error.response.data.error });
         }
       };
       registerUser();

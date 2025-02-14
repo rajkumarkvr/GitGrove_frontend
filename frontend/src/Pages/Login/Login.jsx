@@ -10,6 +10,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import validateLoginData from "./loginValidate";
 import useLocalStorage from "../../CustomHooks/OwnLocalStorage";
+import Loading from "../../Components/Loading";
+import axiosInstance from "../../axiosInstance";
 const Login = () => {
   const [credentials, setCredentials] = useState({
     identifier: "",
@@ -17,6 +19,7 @@ const Login = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [storedValue, setStoredValue] = useLocalStorage("_user", {});
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const handleChange = (e) => {
@@ -25,29 +28,32 @@ const Login = () => {
 
   const handleLogin = () => {
     console.log("User Login:", credentials);
+    setLoading(true);
     if (validateLoginData(credentials, setErrors)) {
       const loginUser = async () => {
         const user = {
-          identifier: identifier,
-          password: password,
+          identifier: credentials.identifier,
+          password: credentials.password,
         };
         try {
-          const response = await axiosInstance.post("/auth/login", {
-            body: JSON.stringify(user),
-          });
+          const response = await axiosInstance.post("/auth/login", user);
 
           console.log(response);
-          useLocalStorage("_user", response.data.user);
+          setStoredValue(response.data.user);
+          setLoading(false);
           navigate("/");
         } catch (error) {
-          if (error.response.statusCode === 400) {
-            setErrors({ global: "Invalid login" });
-          } else {
-            console.error("Error registering user:", error);
-            setErrors({
-              global: "Failed to register user. Please try again later.",
-            });
-          }
+          setLoading(false);
+          console.log(error);
+          //   console.log(error.response);
+          //   if (error.response.status === 400) {
+          //     setErrors({ global: "Invalid login" });
+          //   } else {
+          //     console.error("Error registering user:", error);
+          //     setErrors({
+          //       global: "Failed to register user. Please try again later.",
+          //     });
+          //   }
         }
       };
       loginUser();
@@ -55,6 +61,7 @@ const Login = () => {
   };
   return (
     <Container maxWidth="xs">
+      {loading && <Loading />}
       <Box
         sx={{
           display: "flex",

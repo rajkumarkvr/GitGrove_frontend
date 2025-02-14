@@ -9,7 +9,8 @@ export const useUserProfile = () => {
 };
 function UserContextProvider({ children }) {
   const [currentUser, setCurrentUser] = useState({});
-  const [storedValue] = useLocalStorage("_user", "");
+  const [storedValue, setStoredValue] = useLocalStorage("_user", {});
+
   useEffect(() => {
     setCurrentUser(storedValue);
   }, []);
