@@ -25,7 +25,7 @@ const MainPasswordReset = () => {
 
     try {
       const response = await mailServerAxiosInstance.post(
-        "/api/auth/reset-password",
+        "service/api/auth/reset-password",
         { token, password }
       );
       setMessage({ type: "success", text: response.data.message });

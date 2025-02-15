@@ -27,7 +27,7 @@ const RepositoryFileView = ({ username, selectedBranch, onBranchChange }) => {
       const usrinfo = getCurrentUser();
       try {
         const response = await axiosInstance.get(
-          `/repo-info?username=${usrinfo.username}&reponame=${repo}`
+          `service/repo-info?username=${usrinfo.username}&reponame=${repo}`
         );
         setRepos(response.data);
       } catch (error) {

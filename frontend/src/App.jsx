@@ -19,6 +19,9 @@ import CommitList from "./Pages/Repository/CommitList";
 import axiosInstance from "./axiosInstance";
 import getCurrentUser from "./Contexts/getCurrentUser";
 import Starred from "./Pages/Starred/Starred";
+import { setAuthToken } from "./CustomHooks/setToken";
+import getToken from "./CustomHooks/getAuthToken";
+import { RequiredAuth } from "./CustomHooks/RequiredAuth";
 // import HomeIcon from "@mui/icons-material/Home";
 //1 unit = 8px by default in MUI
 // const repo = {
@@ -158,15 +161,41 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/repositories" replace />} />
-        <Route path="/" element={<Dashboard toggleTheme={toggleTheme} />}>
-          <Route index path="repositories" element={<MyRepository />} />
+        <Route
+          path="/"
+          element={
+            <RequiredAuth>
+              <Dashboard toggleTheme={toggleTheme} />
+            </RequiredAuth>
+          }
+        >
           <Route
-            path="/repo/:id"
-            element={<RepositoryDetails onBranchChange={onBranchChange} />}
+            index
+            path="repositories"
+            element={
+              <RequiredAuth>
+                <MyRepository
+                  title={"My repositories"}
+                  api={"/service/getAllRepositories"}
+                />
+              </RequiredAuth>
+            }
           />
           <Route
-            path="/repo/:id/commits"
-            element={<CommitList commits={repo.commits} />}
+            path="/repo/:id"
+            element={
+              <RequiredAuth>
+                <RepositoryDetails onBranchChange={onBranchChange} />
+              </RequiredAuth>
+            }
+          />
+          <Route
+            path="/repo/commits/:id"
+            element={
+              <RequiredAuth>
+                <CommitList />
+              </RequiredAuth>
+            }
           />
           {/* <Route
             path="/repo/files"
@@ -185,17 +214,33 @@ function App() {
           <Route
             path="/repo/files/:repo/:id"
             element={
-              <RepositoryFileView
-                username={userinfo.username}
-                selectedBranch={repo.defaultBranch}
-                onBranchChange={onBranchChange}
-              />
+              <RequiredAuth>
+                <RepositoryFileView
+                  username={userinfo?.username}
+                  selectedBranch={repo?.defaultBranch}
+                  onBranchChange={onBranchChange}
+                />
+              </RequiredAuth>
             }
           />
           ;
           <Route path="explore" element={<h1>Explore</h1>} />
-          <Route path="create-repo" element={<CreateRepo />} />
-          <Route path="starred" element={<Starred />} />
+          <Route
+            path="create-repo"
+            element={
+              <RequiredAuth>
+                <CreateRepo />
+              </RequiredAuth>
+            }
+          />
+          <Route
+            path="starred"
+            element={
+              <RequiredAuth>
+                <Starred />
+              </RequiredAuth>
+            }
+          />
           <Route path="pull-requests" element={<h1>Pull Requets</h1>} />
           <Route path="profile" element={<h1>Profile</h1>} />
           {/* Nested Settings Route */}
@@ -203,19 +248,56 @@ function App() {
             path="/settings"
             element={<Navigate to="/settings/profile-edit" replace />}
           />
-          <Route path="settings" element={<SettingsLayout />}>
+          <Route
+            path="settings"
+            element={
+              <RequiredAuth>
+                <SettingsLayout />
+              </RequiredAuth>
+            }
+          >
             <Route
               path="theme"
               element={
-                <ThemeSettings toggleTheme={toggleTheme} mode={darkMode} />
+                <RequiredAuth>
+                  <ThemeSettings toggleTheme={toggleTheme} mode={darkMode} />
+                </RequiredAuth>
               }
             />
-            <Route path="profile-edit" element={<ProfileSettings />} />
-            <Route path="account" element={<AccountSettings />} />
+            <Route
+              path="profile-edit"
+              element={
+                <RequiredAuth>
+                  <ProfileSettings />
+                </RequiredAuth>
+              }
+            />
+            <Route
+              path="account"
+              element={
+                <RequiredAuth>
+                  <AccountSettings />
+                </RequiredAuth>
+              }
+            />
           </Route>
         </Route>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/register"
+          element={
+            <RequiredAuth>
+              <Register />
+            </RequiredAuth>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <RequiredAuth>
+              <Login />
+            </RequiredAuth>
+          }
+        />
         <Route path="/auth/reset-password" element={<ResetPassword />} />
         <Route
           path="/auth/main-reset-password/:token"

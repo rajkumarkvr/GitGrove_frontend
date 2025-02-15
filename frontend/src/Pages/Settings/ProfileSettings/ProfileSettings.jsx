@@ -17,6 +17,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import getCurrentUser from "../../../Contexts/getCurrentUser";
 import axiosInstance from "../../../axiosInstance";
 import setCurrentUser from "../../../Contexts/setCurrentUser";
+import cloudinaryInstance from "../../../cloudinaryInstance";
 
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dye2p5i78/image/upload";
 const UPLOAD_PRESET = "my_img_raj_007";
@@ -44,7 +45,7 @@ const ProfileSettings = () => {
       formData.append("file", file);
       formData.append("upload_preset", UPLOAD_PRESET);
 
-      const response = await axiosInstance.post(CLOUDINARY_URL, formData, {
+      const response = await cloudinaryInstance.post(CLOUDINARY_URL, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -97,7 +98,7 @@ const ProfileSettings = () => {
 
     try {
       // **Second API call: Update user profile**
-      const response = await axiosInstance.put(`/users/update/profile`, {
+      const response = await axiosInstance.put(`service/users/update/profile`, {
         oldusername: currentUser.username,
         oldemail: currentUser.email,
         username,

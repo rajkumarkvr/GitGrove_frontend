@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   List,
   ListItem,
@@ -21,21 +21,34 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom"; // Import Link for navigation
 import BackLink from "../../Components/BackLink";
 
-const CommitList = ({ commits }) => {
+const CommitList = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [copiedHash, setCopiedHash] = useState("");
-
+  const [commits, setCommits] = useState([]);
+  const [reponame, setReponame] = useState("");
   const handleCopyHash = (hash) => {
     navigator.clipboard.writeText(hash);
     setCopiedHash(hash);
     setSnackbarOpen(true);
   };
 
+  useEffect(() => {
+    const c = sessionStorage.getItem("commits");
+    if (c != null && c.length !== 0) {
+      const commitDetails = JSON.parse(c);
+      // console.log("Mail" + ;
+      setCommits(JSON.parse(commitDetails.commits));
+      setReponame(commitDetails.reponame);
+    }
+    // return () => {
+
+    //   sessionStorage.removeItem("commits");
+    // };
+  }, []);
   return (
     <>
-      <BackLink to={"/repo/1"} label="Back to repo" />
+      <BackLink to={`/repo/${reponame}`} label="Back to repo" />
       <Paper elevation={3} sx={{ p: 2, borderRadius: 2, bgcolor: "#f9f9f9" }}>
-        {/* Title with Animation */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -46,80 +59,80 @@ const CommitList = ({ commits }) => {
           </Typography>
         </motion.div>
 
-        {/* Commit List */}
         <List>
-          {commits.map((commit, index) => (
-            <motion.div
-              key={commit.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-            >
-              <ListItem sx={{ display: "flex", alignItems: "center", p: 1 }}>
-                {/* Avatar with Hover Effect */}
-                <ListItemAvatar>
-                  <motion.div whileHover={{ scale: 1.1 }}>
-                    <Avatar src={commit.authorAvatar || ""}>
-                      {!commit.authorAvatar && <AccountCircleIcon />}
-                    </Avatar>
-                  </motion.div>
-                </ListItemAvatar>
+          {commits &&
+            commits.map((commit, index) => (
+              <motion.div
+                key={commit.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <ListItem sx={{ display: "flex", alignItems: "center", p: 1 }}>
+                  {/* Avatar with Hover Effect */}
+                  <ListItemAvatar>
+                    <motion.div whileHover={{ scale: 1.1 }}>
+                      <Avatar src={commit.authorAvatar || ""}>
+                        {!commit.authorAvatar && <AccountCircleIcon />}
+                      </Avatar>
+                    </motion.div>
+                  </ListItemAvatar>
 
-                {/* Commit Message & Author Details */}
-                <ListItemText
-                  primary={
-                    <Typography
-                      variant="body1"
-                      fontWeight="bold"
-                      sx={{ color: "text.primary" }}
-                    >
-                      {commit.message}
-                    </Typography>
-                  }
-                  secondary={
-                    <Typography variant="body2" color="textSecondary">
-                      {commit.authorName} •{" "}
-                      {new Date(commit.date).toLocaleString()}
-                    </Typography>
-                  }
-                />
+                  {/* Commit Message & Author Details */}
+                  <ListItemText
+                    primary={
+                      <Typography
+                        variant="body1"
+                        fontWeight="bold"
+                        sx={{ color: "text.primary" }}
+                      >
+                        {commit.message}
+                      </Typography>
+                    }
+                    secondary={
+                      <Typography variant="body2" color="textSecondary">
+                        {commit.authorName} •{" "}
+                        {new Date(commit.date).toLocaleString()}
+                      </Typography>
+                    }
+                  />
 
-                {/* Commit Hash Link */}
-                <Tooltip title="View Commit Details">
-                  <Link
-                    to={`/commit/${commit.hash || "2dt3gsf5"}`}
-                    style={{ textDecoration: "none" }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: "blue",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                        mx: 1,
-                      }}
+                  {/* Commit Hash Link */}
+                  <Tooltip title="View Commit Details">
+                    <Link
+                      to={`/commit/${commit.hash || "2dt3gsf5"}`}
+                      style={{ textDecoration: "none" }}
                     >
-                      {"2dt3gsf5"}
-                      {/* {commit.hash.slice(0, 7)} */}
-                    </Typography>
-                  </Link>
-                </Tooltip>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "blue",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                          mx: 1,
+                        }}
+                      >
+                        {"2dt3gsf5"}
+                        {/* {commit.hash.slice(0, 7)} */}
+                      </Typography>
+                    </Link>
+                  </Tooltip>
 
-                {/* Copy Hash Button with Animation */}
-                <Tooltip title="Copy Commit Hash">
-                  <motion.div whileTap={{ scale: 0.9 }}>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleCopyHash(commit.hash)}
-                    >
-                      <ContentCopyIcon fontSize="small" />
-                    </IconButton>
-                  </motion.div>
-                </Tooltip>
-              </ListItem>
-              {index !== commits.length - 1 && <Divider />}
-            </motion.div>
-          ))}
+                  {/* Copy Hash Button with Animation */}
+                  <Tooltip title="Copy Commit Hash">
+                    <motion.div whileTap={{ scale: 0.9 }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCopyHash(commit.hash)}
+                      >
+                        <ContentCopyIcon fontSize="small" />
+                      </IconButton>
+                    </motion.div>
+                  </Tooltip>
+                </ListItem>
+                {index !== commits.length - 1 && <Divider />}
+              </motion.div>
+            ))}
         </List>
 
         {/* Snackbar Notification */}

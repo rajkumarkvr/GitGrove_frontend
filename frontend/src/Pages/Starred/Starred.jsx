@@ -15,140 +15,112 @@ import {
   Stack,
   AppBar,
   Toolbar,
+  Skeleton,
   useTheme,
-  useMediaQuery,
-  Button,
 } from "@mui/material";
-import StarIcon from "@mui/icons-material/Star";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import StarIcon from "@mui/icons-material/Star";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../../axiosInstance";
 import getCurrentUser from "../../Contexts/getCurrentUser";
-import Loading from "../../Components/Loading";
-const dummyStarredRepos = [
-  {
-    id: 1,
-    name: "nextjs-ecommerce",
-    description:
-      "A modern e-commerce platform built with Next.js and Tailwind CSS.",
-    stars: 230,
-    updated: "2024-02-10T14:30:00",
-    created_at: "2023-11-15T10:20:00",
-  },
-  {
-    id: 2,
-    name: "react-chat-app",
-    description:
-      "A real-time chat application using React, Socket.io, and Firebase.",
-    stars: 180,
-    updated: "2024-01-25T18:45:00",
-    created_at: "2023-09-01T08:00:00",
-  },
-  {
-    id: 3,
-    name: "AI-code-helper",
-    description:
-      "An AI-powered tool that assists with writing code efficiently.",
-    stars: 315,
-    updated: "2024-02-05T09:15:00",
-    created_at: "2022-12-20T16:30:00",
-  },
-  {
-    id: 4,
-    name: "open-source-dashboard",
-    description:
-      "An open-source dashboard for monitoring analytics and performance.",
-    stars: 90,
-    updated: "2024-02-08T12:00:00",
-    created_at: "2023-07-10T14:45:00",
-  },
-  {
-    id: 5,
-    name: "machine-learning-experiments",
-    description: "A collection of machine learning models and experiments.",
-    stars: 270,
-    updated: "2024-02-12T20:10:00",
-    created_at: "2023-03-05T09:30:00",
-  },
-];
-
-function getFormattedDateTime(timestamp) {
-  const date = new Date(timestamp + "Z");
-  date.setHours(date.getHours() - 5);
-  date.setMinutes(date.getMinutes() - 30);
-
-  return date.toLocaleString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-}
+import getFormattedDateTime from "../../CustomHooks/getFormattedDateTime";
 
 const Starred = () => {
-  const [starredRepos, setStarredRepos] = useState([]);
+  const [repositories, setRepositories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("updated");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [starredRepos, setStarredRepos] = useState(new Set());
+
   const navigate = useNavigate();
   const theme = useTheme();
-  const isDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
 
   useEffect(() => {
-    setLoading(true);
     const user = getCurrentUser();
     if (user) {
-      const fetchStarredRepos = async () => {
+      const fetchRepos = async () => {
         try {
           const response = await axiosInstance.get(
-            `/getStarredRepositories?username=${user.username}`
+            `service/getstarredrepositories?username=${user.username}`
           );
-          setStarredRepos(response.data.repositories);
+          setRepositories(response?.data?.repositories || []);
+
+          // Store starred repo IDs in a Set for easy lookup
+          const starredRepoIds = new Set(
+            response?.data?.repositories?.map((repo) => repo.id)
+          );
+          setStarredRepos(starredRepoIds);
           setLoading(false);
         } catch (error) {
-          console.error("Error fetching starred repos:", error);
+          console.log(error);
           setLoading(false);
         }
       };
-      fetchStarredRepos();
+      fetchRepos();
     } else {
       navigate("/login");
     }
   }, []);
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleSortChange = (event) => {
-    setSortBy(event.target.value);
-  };
-
-  const handleUnstar = (repoId) => {
-    setStarredRepos((prevRepos) =>
-      prevRepos.filter((repo) => repo.id !== repoId)
+  if (repositories == null || repositories.length == 0) {
+    return (
+      <Typography variant="h6" textAlign="center" color="text.secondary">
+        You have not starred any repositories yet!
+      </Typography>
     );
-  };
-
-  const filteredRepos = dummyStarredRepos
+  }
+  const filteredRepos = repositories
     .filter((repo) =>
       repo.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) =>
       sortBy === "stars"
         ? b.stars - a.stars
-        : sortBy === "name"
-        ? a.name.localeCompare(b.name)
         : new Date(b.updated) - new Date(a.updated)
     );
 
+  // Handle starring/unstarring a repository
+  const handleStarClick = async (repoId) => {
+    const user = getCurrentUser();
+    if (!user) return navigate("/login");
+
+    try {
+      const isStarred = starredRepos.has(repoId);
+      const apiUrl = `service/AddStarToRepository?username=${user.username}&repoid=${repoId}`;
+
+      if (isStarred) {
+        await axiosInstance.post(apiUrl); // Unstar the repo
+        setStarredRepos((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(repoId);
+          return newSet;
+        });
+
+        // Remove unstarred repo from the list
+        setRepositories((prevRepos) =>
+          prevRepos.filter((repo) => repo.id !== repoId)
+        );
+      } else {
+        await axiosInstance.post(apiUrl); // Star the repo
+        setStarredRepos((prev) => new Set(prev).add(repoId));
+
+        // Update the starred count
+        setRepositories((prevRepos) =>
+          prevRepos.map((repo) =>
+            repo.id === repoId ? { ...repo, stars: repo.stars + 1 } : repo
+          )
+        );
+      }
+    } catch (error) {
+      console.log("Error starring repository:", error);
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 10, mb: 4 }}>
+      {/* App Bar */}
       <AppBar
         position="fixed"
         color="default"
@@ -156,134 +128,165 @@ const Starred = () => {
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-around" }}>
           <Typography variant="h5" fontWeight="bold">
-            Starred Repositories
+            Starred repositories
           </Typography>
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack direction="row" spacing={20} alignItems="center">
             <TextField
-              label="Search Starred Repos"
+              label="Search Repositories"
               variant="outlined"
               size="small"
               value={searchTerm}
-              onChange={handleSearchChange}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <FormControl size="small" sx={{ minWidth: "100px" }}>
+            <FormControl size="small">
               <InputLabel>Sort By</InputLabel>
               <Select
                 value={sortBy}
-                onChange={handleSortChange}
+                onChange={(e) => setSortBy(e.target.value)}
                 label="Sort By"
-                sx={{ minWidth: "200px" }}
+                sx={{ minWidth: 250 }}
               >
                 <MenuItem value="updated">Last Updated</MenuItem>
                 <MenuItem value="stars">Stars</MenuItem>
-                <MenuItem value="name">Name</MenuItem>
               </Select>
             </FormControl>
           </Stack>
         </Toolbar>
       </AppBar>
 
-      {loading ? (
-        <Loading />
-      ) : (
-        <Box
-          sx={{
-            mt: 12,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
-            gap: 5,
-          }}
-        >
-          {filteredRepos.length > 0 ? (
-            filteredRepos.map((repo) => (
-              <motion.div
-                key={repo.id}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2 }}
+      {/* Repositories List */}
+      <Box
+        sx={{
+          mt: 12,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
+          gap: 5,
+        }}
+      >
+        {loading ? (
+          Array.from(new Array(6)).map((_, index) => (
+            <Card
+              key={index}
+              sx={{
+                p: 2,
+                boxShadow: 3,
+                borderRadius: 2,
+                backgroundColor: theme.palette.background.paper,
+              }}
+            >
+              <CardContent
+                sx={{
+                  flexGrow: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  rowGap: 2,
+                }}
               >
-                <Card
+                <Skeleton variant="text" width="60%" height={30} />
+                <Skeleton variant="text" width="90%" />
+                <Skeleton variant="text" width="70%" />
+              </CardContent>
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", p: 1 }}
+              >
+                <Skeleton variant="circular" width={32} height={32} />
+                <Skeleton variant="circular" width={32} height={32} />
+              </Box>
+            </Card>
+          ))
+        ) : filteredRepos.length > 0 ? (
+          filteredRepos.map((repo) => (
+            <motion.div
+              key={repo.id}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Card
+                sx={{
+                  p: 2,
+                  boxShadow: 3,
+                  borderRadius: 2,
+                  backgroundColor: theme.palette.background.paper,
+                }}
+              >
+                <CardContent
                   sx={{
-                    p: 2,
-                    boxShadow: 3,
-                    borderRadius: 2,
-                    backgroundColor: theme.palette.background.paper,
-                    color: theme.palette.text.primary,
+                    flexGrow: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    rowGap: 2,
                   }}
                 >
-                  <CardContent
-                    sx={{
-                      flexGrow: 1,
-                      display: "flex",
-                      flexDirection: "column",
-                      rowGap: 2,
-                    }}
-                  >
-                    <Typography variant="h6" fontWeight="bold">
-                      {repo.name}
+                  <Typography variant="h6" fontWeight="bold">
+                    {repo.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {repo.description || "No description available."}
+                  </Typography>
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="caption" fontWeight="bold">
+                      Last Updated:
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {repo.description || "No description available."}
+                    <Typography variant="body2">
+                      {getFormattedDateTime(repo.updated)}
                     </Typography>
-
-                    <Box sx={{ mt: 2 }}>
-                      <Typography variant="caption" fontWeight="bold">
-                        Last Updated:
-                      </Typography>
-                      <Typography variant="body2">
-                        {getFormattedDateTime(repo.updated)}
-                      </Typography>
-
-                      <Typography
-                        variant="caption"
-                        fontWeight="bold"
-                        sx={{ mt: 1 }}
-                      >
-                        Created At:
-                      </Typography>
-                      <Typography variant="body2">
-                        {getFormattedDateTime(repo.created_at)}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      p: 1,
-                    }}
-                  >
-                    <Tooltip title="View Repository">
-                      <IconButton component={Link} to={`/repo/${repo.name}`}>
-                        <VisibilityIcon color="primary" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Unstar Repository">
-                      <IconButton onClick={() => handleUnstar(repo.id)}>
-                        <RemoveCircleOutlineIcon sx={{ color: "red" }} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Star Count">
-                      <IconButton>
-                        <StarIcon sx={{ color: "gold" }} />
-                        <Typography variant="body2" sx={{ ml: 0.5 }}>
-                          {repo.stars}
-                        </Typography>
-                      </IconButton>
-                    </Tooltip>
+                    <Typography
+                      variant="caption"
+                      fontWeight="bold"
+                      sx={{ mt: 1 }}
+                    >
+                      Created At:
+                    </Typography>
+                    <Typography variant="body2">
+                      {getFormattedDateTime(repo.created_at)}
+                    </Typography>
                   </Box>
-                </Card>
-              </motion.div>
-            ))
-          ) : (
-            <Typography variant="h6" textAlign="center" color="text.secondary">
-              You haven't starred any repositories yet.
-            </Typography>
-          )}
-        </Box>
-      )}
+                </CardContent>
+
+                {/* Buttons Section */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    p: 1,
+                  }}
+                >
+                  <Tooltip title="View Repository">
+                    <IconButton component={Link} to={`/repo/${repo.name}`}>
+                      <VisibilityIcon color="primary" />
+                    </IconButton>
+                  </Tooltip>
+
+                  {/* Star/Unstar Button */}
+                  <Tooltip
+                    title={
+                      starredRepos.has(repo.id)
+                        ? "Unstar Repository"
+                        : "Star Repository"
+                    }
+                  >
+                    <IconButton onClick={() => handleStarClick(repo.id)}>
+                      {starredRepos.has(repo.id) ? (
+                        <StarIcon sx={{ color: "gold" }} />
+                      ) : (
+                        <StarBorderIcon />
+                      )}
+                      <Typography variant="body2" sx={{ ml: 0.5 }}>
+                        {repo.stars}
+                      </Typography>
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Card>
+            </motion.div>
+          ))
+        ) : (
+          <Typography variant="h6" textAlign="center" color="text.secondary">
+            You have not starred any repositories yet!
+          </Typography>
+        )}
+      </Box>
     </Container>
   );
 };

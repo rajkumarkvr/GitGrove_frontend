@@ -12,6 +12,9 @@ import validateLoginData from "./loginValidate";
 import useLocalStorage from "../../CustomHooks/OwnLocalStorage";
 import Loading from "../../Components/Loading";
 import axiosInstance from "../../axiosInstance";
+import { setAuthToken } from "../../CustomHooks/setToken";
+import getToken from "../../CustomHooks/getAuthToken";
+import setCurrentUser from "../../Contexts/setCurrentUser";
 const Login = () => {
   const [credentials, setCredentials] = useState({
     identifier: "",
@@ -38,8 +41,9 @@ const Login = () => {
         try {
           const response = await axiosInstance.post("/auth/login", user);
 
-          console.log(response);
-          setStoredValue(response.data.user);
+          console.log(response.data);
+          setCurrentUser(response.data.user);
+          setAuthToken(getToken());
           setLoading(false);
           navigate("/");
         } catch (error) {

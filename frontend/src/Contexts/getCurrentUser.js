@@ -1,5 +1,7 @@
 function getCurrentUser() {
-  return JSON.parse(localStorage.getItem("_user"));
+  const user = localStorage.getItem("_user");
+  if (user != null) return JSON.parse(user);
+  return null;
 }
 
 export default getCurrentUser;

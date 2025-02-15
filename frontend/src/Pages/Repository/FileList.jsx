@@ -11,7 +11,7 @@ import FolderIcon from "@mui/icons-material/Folder";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 import { Link } from "react-router-dom";
 
-const FileList = ({ files,reponame }) => {
+const FileList = ({ files, reponame }) => {
   if (files == null || files.length === 0)
     return (
       <Typography variant="h5" color="info">

@@ -87,7 +87,7 @@ const Dashboard = ({ toggleTheme }) => {
             </Typography>
           </Box>
           <img
-            src={currentUser.profile_url}
+            src={currentUser?.profile_url}
             style={{ width: "40px", height: "40px", borderRadius: "50%" }}
           />
         </Toolbar>

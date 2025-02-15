@@ -20,8 +20,9 @@ const RepositoryDetails = ({ onBranchChange }) => {
       setLoading(true); // Start loading spinner before fetching data
       try {
         const response = await axiosInstance.get(
-          `/repo-info?username=${currentUserobj.username}&reponame=${id}`
+          `service/repo-info?username=${currentUserobj.username}&reponame=${id}`
         );
+        console.log(response.data);
         setRepos(response.data);
       } catch (error) {
         console.error(error);
@@ -33,6 +34,17 @@ const RepositoryDetails = ({ onBranchChange }) => {
     fetchRepoInfo();
   }, []);
 
+  const handleCommit = () => {
+    if (repo.commits != null) {
+      sessionStorage.removeItem("commits");
+      const commitDetails = {
+        reponame: id,
+        commits: JSON.stringify(repo.commits),
+      };
+      sessionStorage.setItem("commits", JSON.stringify(commitDetails));
+    }
+    navigate(`/repo/commits/${id}`);
+  };
   return (
     <Box>
       {/* 🔹 Repository Header Skeleton */}
@@ -70,7 +82,7 @@ const RepositoryDetails = ({ onBranchChange }) => {
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate("/repo/1/commits")}
+              onClick={() => handleCommit()}
             >
               View Commits
             </Button>

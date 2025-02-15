@@ -22,20 +22,22 @@ import {
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
+import StarIcon from "@mui/icons-material/Star"; // Imported Filled Star Icon
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../../axiosInstance";
 import getCurrentUser from "../../Contexts/getCurrentUser";
-
-const MyRepositories = () => {
+import getFormattedDateTime from "../../CustomHooks/getFormattedDateTime";
+const MyRepositories = ({ title, api }) => {
   const [repositories, setRepositories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("updated");
   const [loading, setLoading] = useState(true);
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [selectedRepo, setSelectedRepo] = useState(null);
+  const [starredRepos, setStarredRepos] = useState(new Set()); // Store starred repo IDs
   const navigate = useNavigate();
   const theme = useTheme();
 
@@ -45,9 +47,18 @@ const MyRepositories = () => {
       const fetchRepos = async () => {
         try {
           const response = await axiosInstance.get(
-            `/getAllRepositories?username=${user.username}`
+            `${api}?username=${user.username}`
           );
+
+          console.log(response.data);
           setRepositories(response.data.repositories);
+
+          const starredSet = new Set(
+            response.data.repositories
+              .filter((repo) => repo.isStarred)
+              .map((repo) => repo.id)
+          );
+          setStarredRepos(starredSet);
           setLoading(false);
         } catch (error) {
           console.log(error);
@@ -60,6 +71,67 @@ const MyRepositories = () => {
     }
   }, []);
 
+  const handleStarClick = async (repoId) => {
+    const user = getCurrentUser();
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.post(
+        "/service/AddStarToRepository",
+        null,
+        {
+          params: { username: user.username, repoid: repoId },
+        }
+      );
+      console.log(response);
+      if (response.status === 200) {
+        setStarredRepos((prev) => {
+          const newSet = new Set(prev);
+          if (newSet.has(repoId)) {
+            newSet.delete(repoId); // Remove if already starred
+          } else {
+            newSet.add(repoId); // Add if not starred
+          }
+          return newSet;
+        });
+
+        // Update repository stars count
+        setRepositories((prevRepos) =>
+          prevRepos.map((repo) =>
+            repo.id === repoId
+              ? {
+                  ...repo,
+                  stars: starredRepos.has(repoId)
+                    ? repo.stars - 1
+                    : repo.stars + 1,
+                }
+              : repo
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error updating star:", error);
+    }
+  };
+  if (repositories == null || repositories.length == 0) {
+    return (
+      <Typography variant="h6" textAlign="center" color="text.secondary">
+        No repositories found.
+      </Typography>
+    );
+  }
+  const filteredRepos = repositories
+    .filter((repo) =>
+      repo.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) =>
+      sortBy === "stars"
+        ? b.stars - a.stars
+        : new Date(b.updated) - new Date(a.updated)
+    );
   return (
     <Container maxWidth="lg" sx={{ mt: 10, mb: 4 }}>
       {/* App Bar */}
@@ -70,7 +142,7 @@ const MyRepositories = () => {
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-around" }}>
           <Typography variant="h5" fontWeight="bold">
-            My Repositories
+            {title}
           </Typography>
           <Stack direction="row" spacing={20} alignItems="center">
             <TextField
@@ -106,62 +178,11 @@ const MyRepositories = () => {
         }}
       >
         {loading ? (
-          // **Skeleton Loading Effect**
           Array.from(new Array(6)).map((_, index) => (
-            <Card
-              key={index}
-              sx={{
-                p: 2,
-                boxShadow: 3,
-                borderRadius: 2,
-                backgroundColor: theme.palette.background.paper,
-              }}
-            >
-              <CardContent
-                sx={{
-                  flexGrow: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  rowGap: 2,
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Skeleton variant="text" width="60%" height={30} />
-                  <Skeleton variant="circular" width={24} height={24} />
-                </Box>
-
-                <Skeleton variant="text" width="90%" />
-                <Skeleton variant="text" width="70%" />
-
-                <Box sx={{ mt: 2, display: "flex", flexDirection: "column" }}>
-                  <Skeleton variant="text" width="50%" />
-                  <Skeleton variant="text" width="80%" />
-                  <Skeleton variant="text" width="50%" sx={{ mt: 1 }} />
-                  <Skeleton variant="text" width="80%" />
-                </Box>
-              </CardContent>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  p: 1,
-                }}
-              >
-                <Skeleton variant="circular" width={32} height={32} />
-                <Skeleton variant="circular" width={32} height={32} />
-              </Box>
-            </Card>
+            <Skeleton key={index} variant="rectangular" height={150} />
           ))
-        ) : repositories.length > 0 ? (
-          repositories.map((repo) => (
+        ) : filteredRepos.length > 0 ? (
+          filteredRepos.map((repo) => (
             <motion.div
               key={repo.id}
               whileHover={{ scale: 1.02 }}
@@ -207,7 +228,9 @@ const MyRepositories = () => {
                     <Typography variant="caption" fontWeight="bold">
                       Last Updated:
                     </Typography>
-                    <Typography variant="body2">{repo.updated}</Typography>
+                    <Typography variant="body2">
+                      {getFormattedDateTime(repo.updated)}
+                    </Typography>
                     <Typography
                       variant="caption"
                       fontWeight="bold"
@@ -215,7 +238,9 @@ const MyRepositories = () => {
                     >
                       Created At:
                     </Typography>
-                    <Typography variant="body2">{repo.created_at}</Typography>
+                    <Typography variant="body2">
+                      {getFormattedDateTime(repo.created_at)}
+                    </Typography>
                   </Box>
                 </CardContent>
 
@@ -232,9 +257,15 @@ const MyRepositories = () => {
                       <VisibilityIcon color="primary" />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Star Count">
-                    <IconButton>
-                      <StarBorderIcon />
+
+                  {/* Star Button */}
+                  <Tooltip title="Star Repository">
+                    <IconButton onClick={() => handleStarClick(repo.id)}>
+                      {starredRepos.has(repo.id) ? (
+                        <StarIcon color="warning" />
+                      ) : (
+                        <StarBorderIcon />
+                      )}
                       <Typography variant="body2" sx={{ ml: 0.5 }}>
                         {repo.stars}
                       </Typography>
@@ -250,18 +281,6 @@ const MyRepositories = () => {
           </Typography>
         )}
       </Box>
-
-      {/* Menu for repository actions */}
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={() => setMenuAnchor(null)}
-      >
-        <MuiMenuItem onClick={() => console.log("Deleting repository")}>
-          <DeleteIcon sx={{ mr: 1, color: "red" }} />
-          Delete
-        </MuiMenuItem>
-      </Menu>
     </Container>
   );
 };
