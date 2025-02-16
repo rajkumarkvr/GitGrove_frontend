@@ -22,6 +22,7 @@ import Starred from "./Pages/Starred/Starred";
 import { setAuthToken } from "./CustomHooks/setToken";
 import getToken from "./CustomHooks/getAuthToken";
 import { RequiredAuth } from "./CustomHooks/RequiredAuth";
+import CollaborationInvite from "./Pages/Repository/CollaborationInvite/CollaborationInvite";
 // import HomeIcon from "@mui/icons-material/Home";
 //1 unit = 8px by default in MUI
 // const repo = {
@@ -302,6 +303,11 @@ function App() {
         <Route
           path="/auth/main-reset-password/:token"
           element={<MainPasswordReset />}
+        />
+
+        <Route
+          path="auth/collaboration-invite"
+          element={<CollaborationInvite />}
         />
       </Routes>
     </BrowserRouter>

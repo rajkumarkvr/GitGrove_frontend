@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import getToken from "./getAuthToken";
 import { useNavigate } from "react-router-dom";
 import getCurrentUser from "../Contexts/getCurrentUser";
-import Login from "../Pages/Login/Login";
 import { isTokenValid } from "./isValidToken";
 import axiosInstance from "../axiosInstance";
 
@@ -10,56 +9,61 @@ export const RequiredAuth = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const token = getToken();
+    const currentUser = getCurrentUser();
+
+    console.log("Token:", token);
+    console.log("Current User:", currentUser);
+
     if (
-      getToken() == null ||
-      getCurrentUser == null ||
-      !isTokenValid(getToken())
+      token == null ||
+      currentUser == null ||
+      currentUser == {} ||
+      Object.keys(currentUser).length == 0
     ) {
+      console.log("Invalid or expired token");
+
       const deleteSession = async () => {
-        const token = getToken();
-        if (token != null) {
-          console.log("deuhgugsayg");
+        if (token) {
           try {
-            const response = await axiosInstance.post(
-              `/clearsession?expiredToken=${token}`
-            );
-            console.log(response.data);
+            await axiosInstance.post(`/clearsession?expiredToken=${token}`);
           } catch (error) {
-            console.log("Error to clear session");
-            console.log(error);
+            console.error("Error clearing session", error);
           }
         }
       };
+
       deleteSession();
-      if (children.type.name == "Login") {
-        navigate("/login");
-      } else if (children.type.name == "Register") {
-        navigate("/register");
-      } else {
-        navigate("/login");
-        return;
+      if (React.isValidElement(children)) {
+        if (children.type.name === "Login") {
+          navigate("/login");
+        } else if (children.type.name === "Register") {
+          navigate("/register");
+        } else {
+          navigate("/login");
+        }
       }
-    }
+    } else {
+      const checkAuth = async () => {
+        try {
+          await axiosInstance.post("/service/ValidSession");
+        } catch (error) {
+          console.error("Error checking auth", error);
+          navigate("/login");
+        }
+      };
 
-    const checkAuth = async () => {
-      try {
-        const response = await axiosInstance.post("/service/ValidSession");
-        console.log(response.data);
-      } catch (error) {
-        console.log("Error checking auth");
-        console.log(error);
-        navigate("/login");
-      }
-    };
+      console.log("User authenticated");
 
-    console.log("not null");
-    if (getCurrentUser != null) {
-      console.log("curr not null");
-
-      if (children.type.name == "Login" || children.type.name == "Register") {
-        navigate("/repositories");
-      } else {
-        checkAuth();
+      if (React.isValidElement(children)) {
+        if (
+          children.type.name === "Login" ||
+          children.type.name === "Register"
+        ) {
+          navigate("/repositories");
+        } else {
+          checkAuth();
+        }
       }
     }
   }, []);

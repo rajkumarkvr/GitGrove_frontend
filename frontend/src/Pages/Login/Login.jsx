@@ -15,6 +15,8 @@ import axiosInstance from "../../axiosInstance";
 import { setAuthToken } from "../../CustomHooks/setToken";
 import getToken from "../../CustomHooks/getAuthToken";
 import setCurrentUser from "../../Contexts/setCurrentUser";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 const Login = () => {
   const [credentials, setCredentials] = useState({
     identifier: "",
@@ -22,7 +24,6 @@ const Login = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [storedValue, setStoredValue] = useLocalStorage("_user", {});
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const handleChange = (e) => {
@@ -43,6 +44,7 @@ const Login = () => {
 
           console.log(response.data);
           setCurrentUser(response.data.user);
+          console.log(getToken());
           setAuthToken(getToken());
           setLoading(false);
           navigate("/");
@@ -61,6 +63,41 @@ const Login = () => {
         }
       };
       loginUser();
+    }
+  };
+  const handleOnSuccessGoogleLogin = (token) => {
+    console.log(token);
+    const response_google = jwtDecode(token.credential);
+    if (
+      response_google != null &&
+      response_google &&
+      response_google.email_verified
+    ) {
+      const login = async () => {
+        setLoading(true);
+        try {
+          const user = {
+            username: response_google.given_name,
+            email: response_google.email,
+            avator: response_google.picture,
+            password: "test@123",
+          };
+          const response = await axiosInstance.post("/auth/register", user);
+          console.log(response.data);
+
+          setCurrentUser(response.data.user);
+          setAuthToken(getToken());
+          setLoading(false);
+
+          setLoading(false);
+          navigate("/");
+        } catch (err) {
+          setLoading(false);
+          console.log("Error in Google Login", err);
+          return;
+        }
+      };
+      login();
     }
   };
   return (
@@ -119,7 +156,12 @@ const Login = () => {
         >
           Forgot Password?
         </Link>
-
+        <GoogleLogin
+          onSuccess={handleOnSuccessGoogleLogin}
+          onError={() => {
+            console.log("Login failed");
+          }}
+        />
         <Typography variant="body2" sx={{ mt: 1 }}>
           New user?
           <Link

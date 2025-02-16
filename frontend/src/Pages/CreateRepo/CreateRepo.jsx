@@ -58,7 +58,7 @@ const CreateRepo = () => {
       // visibility,
       try {
         const response = await axiosInstance.post(
-          `/CreateRepoServlet`,
+          `service/CreateRepoServlet`,
           repoInfo
         );
         navigate("/repositories");

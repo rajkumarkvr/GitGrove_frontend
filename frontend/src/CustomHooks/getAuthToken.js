@@ -9,12 +9,15 @@ function getToken() {
   }
 
   const cookieKey = `gitgrove_${currentUser.username}`;
-
+  //   console.log(cookieKey);
+  console.log(document.cookie);
   const cookies = document.cookie.split("; ");
 
   for (const cookie of cookies) {
     const [key, value] = cookie.split("=");
+    console.log(key, value);
     if (key === cookieKey) {
+      console.log("Cookie found: " + value);
       return decodeURIComponent(value);
     }
   }

@@ -13,6 +13,9 @@ import validateRegistrationData from "./registerValidate";
 import axiosInstance from "../../axiosInstance";
 import useLocalStorage from "../../CustomHooks/OwnLocalStorage";
 import Loading from "../../Components/Loading";
+import { setAuthToken } from "../../CustomHooks/setToken";
+import getToken from "../../CustomHooks/getAuthToken";
+import setCurrentUser from "../../Contexts/setCurrentUser";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -26,7 +29,7 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [storedValue, setStoredValue] = useLocalStorage("_user", {});
   const navigate = useNavigate();
-
+  // console.log(getToken());
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -40,11 +43,13 @@ const Register = () => {
           username: formData.username,
           email: formData.email,
           password: formData.password,
+          avator: "",
         };
         try {
           const response = await axiosInstance.post("/auth/register", user);
           console.log(response.data);
-          setStoredValue(response.data.user);
+          setCurrentUser(response.data.user);
+          setAuthToken(getToken());
           setLoading(false);
           navigate("/");
         } catch (error) {

@@ -18,7 +18,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import CommitIcon from "@mui/icons-material/Commit";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import { Link, useParams } from "react-router-dom"; // Import Link for navigation
 import BackLink from "../../Components/BackLink";
 
 const CommitList = () => {
@@ -26,6 +26,7 @@ const CommitList = () => {
   const [copiedHash, setCopiedHash] = useState("");
   const [commits, setCommits] = useState([]);
   const [reponame, setReponame] = useState("");
+  const { id } = useParams();
   const handleCopyHash = (hash) => {
     navigator.clipboard.writeText(hash);
     setCopiedHash(hash);
@@ -47,7 +48,7 @@ const CommitList = () => {
   }, []);
   return (
     <>
-      <BackLink to={`/repo/${reponame}`} label="Back to repo" />
+      <BackLink to={`/repo/${id}`} label="Back to repo" />
       <Paper elevation={3} sx={{ p: 2, borderRadius: 2, bgcolor: "#f9f9f9" }}>
         <motion.div
           initial={{ opacity: 0, y: -10 }}

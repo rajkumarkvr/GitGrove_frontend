@@ -153,4 +153,72 @@ app.post("/api/auth/reset-password", async (req, res) => {
   }
 });
 
+//Request for collaborators
+
+app.post("/api/users/invite-collab", async (req, res) => {
+  try {
+    const { users, inviter } = req.body;
+
+    if (!users || users.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "No users selected for invitation." });
+    }
+    console.log(inviter);
+
+    if (
+      !inviter ||
+      !inviter.username ||
+      !inviter.email ||
+      !inviter.repositoryName
+    ) {
+      return res.status(400).json({ error: "Invalid inviter details." });
+    }
+
+    const emailPromises = users.map((user) => {
+      const inviteLink = `http://localhost:5173/auth/collaboration-invite?inviterUsername=${encodeURIComponent(
+        inviter.username
+      )}&inviterAvatar=${encodeURIComponent(
+        inviter.avator
+      )}&inviteeUsername=${encodeURIComponent(
+        user.username
+      )}&inviteeAvatar=${encodeURIComponent(
+        user.avatar
+      )}&repo=${encodeURIComponent(inviter.repositoryName)}`;
+
+      const mailOptions = {
+        from: `"${inviter.username} (GitGrove)" <${process.env.EMAIL_USER}>`,
+        to: user.email,
+        subject: `GitGrove Collaboration Invite from ${inviter.username}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; border-radius: 10px; border: 1px solid #ddd; max-width: 500px; background-color: #f9f9f9;">
+            <h2 style="text-align: center; color: #333;">You're Invited to Collaborate! 🚀</h2>
+            <p>Dear <strong>${user.username}</strong>,</p>
+            <p><strong>${inviter.username}</strong> has invited you to collaborate on the repository "<strong>${inviter.repositoryName}</strong>" on GitGrove.</p>
+            <div style="text-align: center;">
+              <img src="${inviter.avator}" alt="${inviter.username}" style="border-radius: 50%; width: 70px; height: 70px; margin-bottom: 10px;">
+              <p style="font-size: 14px; color: #555;">From: <strong>${inviter.username}</strong></p>
+            </div>
+            <p style="text-align: center; margin: 20px 0;">
+              <a href="${inviteLink}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">Accept Invitation</a>
+            </p>
+            <p>If you did not expect this invitation, you can ignore this email.</p>
+            <p style="font-size: 12px; color: #777; text-align: center;">GitGrove - Empowering Open Source Collaboration</p>
+          </div>
+        `,
+      };
+
+      return transporter.sendMail(mailOptions);
+    });
+
+    await Promise.all(emailPromises);
+    res.json({ message: "Successfully invited all selected users." });
+  } catch (error) {
+    console.error("Error sending invitation emails:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to send invitations. Please try again." });
+  }
+});
+
 app.listen(5000, () => console.log("Server running on port 5000"));

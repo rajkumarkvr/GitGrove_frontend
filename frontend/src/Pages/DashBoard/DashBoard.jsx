@@ -25,6 +25,7 @@ import {
 } from "@mui/icons-material";
 import { useTheme } from "@emotion/react";
 import getCurrentUser from "../../Contexts/getCurrentUser";
+import getToken from "../../CustomHooks/getAuthToken";
 
 const drawerWidth = 240;
 const dashBoardItems = [
@@ -41,6 +42,7 @@ const dashBoardItems = [
 ];
 const Dashboard = ({ toggleTheme }) => {
   const theme = useTheme();
+
   const currentUser = getCurrentUser();
   return (
     <Box sx={{ display: "flex" }}>

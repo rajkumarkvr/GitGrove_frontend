@@ -57,7 +57,6 @@ const RepositoryDetails = ({ onBranchChange }) => {
           sshUrl={repo.sshUrl}
         />
       )}
-
       {/* 🔹 Branch Selector + View Commits Button Skeleton */}
       <Box
         sx={{
@@ -89,7 +88,6 @@ const RepositoryDetails = ({ onBranchChange }) => {
           </>
         )}
       </Box>
-
       {/* 🔹 File List with Skeleton Effect */}
       {loading ? (
         <FileListSkeleton />
