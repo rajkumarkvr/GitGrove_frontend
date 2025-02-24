@@ -28,7 +28,7 @@ const ResetPassword = () => {
     console.log("Password Reset Request Sent for:", email);
     try {
       const response = await mailServerAxiosInstance.post(
-        "service/api/auth/request-reset",
+        "api/auth/request-reset",
         {
           email: email,
         }

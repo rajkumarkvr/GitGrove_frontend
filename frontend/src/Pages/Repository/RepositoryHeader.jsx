@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -17,6 +17,9 @@ import axiosInstance from "../../axiosInstance";
 import mailServerAxiosInstance from "../../mailServerAxiosInstance";
 import getCurrentUser from "../../Contexts/getCurrentUser";
 import ViewCollaboratorsDialog from "./Collaborations/ViewCollaborators";
+import Lottie from "lottie-react";
+import handleCopy from "../../CustomHooks/handleCopy";
+import BackLink from "../../Components/BackLink";
 
 const RepositoryHeader = ({ repoName, sshUrl, username }) => {
   const [copied, setCopied] = useState(false);
@@ -25,10 +28,15 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const currentUser = getCurrentUser();
-  const handleCopy = () => {
-    navigator.clipboard.writeText(sshUrl);
-    setCopied(true);
-  };
+  const [animationPlaying, setAnimationPlaying] = useState(false);
+  const [animationData, setAnimationData] = useState(null);
+
+  useEffect(() => {
+    fetch("/assets/download-anime.json")
+      .then((response) => response.json())
+      .then((data) => setAnimationData(data))
+      .catch((error) => console.error("Error loading animation:", error));
+  }, []);
 
   const handleAddToRepository = (selectedUsers) => {
     console.log("Users added to repository:", selectedUsers);
@@ -47,6 +55,34 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
             "/api/users/invite-collab",
             { users: selectedUsers, inviter: inviterDetails }
           );
+
+          const requestCollaborationAdd = async (requestDetails) => {
+            try {
+              const response = await axiosInstance.post(
+                `/service/requestcollaborator?ownername=${encodeURIComponent(
+                  requestDetails.ownername
+                )}&inviteename=${encodeURIComponent(
+                  requestDetails.inviteename
+                )}&reponame=${encodeURIComponent(requestDetails.reponame)}`
+              );
+              console.log(response.data);
+            } catch (err) {
+              console.log(err);
+              return;
+            } finally {
+              setLoading(false);
+            }
+            console.log(response.data);
+          };
+          selectedUsers.forEach((user) => {
+            const requestDetails = {
+              ownername: currentUser?.username,
+              inviteename: user.username,
+              reponame: repoName,
+            };
+            requestCollaborationAdd(requestDetails);
+          });
+
           setSuccess(true);
           // setOpenAddPeople(false);
           console.log(response.data);
@@ -62,6 +98,35 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
     }
   };
 
+  const handleDownload = async () => {
+    try {
+      setAnimationPlaying(true);
+      const currentBranch = sessionStorage.getItem("branch") || "master";
+
+      const response = await axiosInstance.get(
+        `/service/download/zip?reponame=${repoName}&username=${username}&branchname=${currentBranch}`,
+        { responseType: "blob" }
+      );
+
+      const blob = new Blob([response.data], { type: "application/zip" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute(
+        "download",
+        `${username}-${repoName}-${currentBranch}.zip`
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading ZIP:", error);
+    } finally {
+      setTimeout(() => {
+        setAnimationPlaying(false);
+      }, 1500);
+    }
+  };
+
   return (
     <>
       <AppBar
@@ -70,46 +135,71 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
         sx={{ boxShadow: 2, padding: 1 }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+          <BackLink to="/repositories" />
           <Typography variant="h6">
             {username} / {repoName}
           </Typography>
 
           <Box sx={{ display: "flex", columnGap: 3 }}>
-            <Tooltip title="View Collaborators">
-              <Button
-                color="secondary"
-                variant="contained"
-                startIcon={<Group />}
-                sx={{ ml: 2 }}
-                onClick={() => setOpen(true)}
-              >
-                View Collaborators
-              </Button>
-            </Tooltip>
-            <Tooltip title="Add people">
-              <Button
-                color="success"
-                variant="contained"
-                startIcon={<GroupAddSharp />}
-                sx={{ ml: 2 }}
-                onClick={() => setOpenAddPeople(true)}
-              >
-                Add people
-              </Button>
-            </Tooltip>
+            {currentUser.username == username && (
+              <>
+                <Tooltip title="View Collaborators">
+                  <Button
+                    color="secondary"
+                    variant="contained"
+                    startIcon={<Group />}
+                    sx={{ ml: 2 }}
+                    onClick={() => setOpen(true)}
+                  >
+                    View Collaborators
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Add people">
+                  <Button
+                    color="success"
+                    variant="contained"
+                    startIcon={<GroupAddSharp />}
+                    sx={{ ml: 2 }}
+                    onClick={() => setOpenAddPeople(true)}
+                  >
+                    Add people
+                  </Button>
+                </Tooltip>
+              </>
+            )}
 
             <Tooltip title="Download as Zip">
               <Button
                 variant="contained"
-                startIcon={<CloudDownloadIcon />}
-                sx={{ ml: 2 }}
+                startIcon={
+                  animationPlaying ? (
+                    <Lottie
+                      animationData={animationData}
+                      loop
+                      style={{ width: 30, height: 30 }}
+                    />
+                  ) : (
+                    <CloudDownloadIcon />
+                  )
+                }
+                sx={{
+                  ml: 2,
+                  backgroundColor: animationPlaying ? "#1976d2" : "default",
+                  transition: "all 0.3s ease",
+                }}
+                onClick={handleDownload}
+                disabled={animationPlaying}
               >
-                Download ZIP
+                {animationPlaying ? "Downloading..." : "Download ZIP"}
               </Button>
             </Tooltip>
 
             <Tooltip title="Copy SSH URL">
-              <IconButton onClick={handleCopy}>
+              <IconButton
+                onClick={() => {
+                  handleCopy(sshUrl, setCopied);
+                }}
+              >
                 <ContentCopyIcon />
               </IconButton>
             </Tooltip>

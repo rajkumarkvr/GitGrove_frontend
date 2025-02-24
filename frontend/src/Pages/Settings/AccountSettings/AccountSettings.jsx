@@ -26,9 +26,8 @@ const AccountSettings = () => {
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const theme = useTheme(); // Get current theme (Light/Dark mode)
+  const theme = useTheme();
 
-  // Logout Function
   const handleLogout = async () => {
     setLoading(true);
     const token = getToken();
@@ -51,7 +50,6 @@ const AccountSettings = () => {
     >
       {loading && <Loading />}
 
-      {/* Side-by-Side Layout */}
       <Box
         sx={{
           display: "flex",
@@ -67,7 +65,6 @@ const AccountSettings = () => {
           },
         }}
       >
-        {/* Left: Account Settings */}
         <Paper
           elevation={12}
           sx={{
@@ -81,7 +78,6 @@ const AccountSettings = () => {
             boxShadow: "0px 8px 20px rgba(0,0,0,0.12)",
           }}
         >
-          {/* Avatar with Smooth Animation */}
           <motion.div
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
@@ -107,7 +103,6 @@ const AccountSettings = () => {
             Manage your account settings here.
           </Typography>
 
-          {/* Logout Button (Animated) */}
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               variant="contained"
@@ -121,7 +116,6 @@ const AccountSettings = () => {
             </Button>
           </motion.div>
 
-          {/* Delete Account Button (Animated) */}
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               variant="contained"
@@ -136,7 +130,6 @@ const AccountSettings = () => {
           </motion.div>
         </Paper>
 
-        {/* Right: Active Sessions */}
         <Paper
           elevation={12}
           sx={{
@@ -149,12 +142,9 @@ const AccountSettings = () => {
             boxShadow: "0px 8px 20px rgba(0,0,0,0.12)",
           }}
         >
-          {/* ACTIVE SESSIONS COMPONENT */}
           <ActiveSessions />
         </Paper>
       </Box>
-
-      {/* Logout Confirmation Dialog */}
       <Dialog
         open={logoutDialogOpen}
         onClose={() => setLogoutDialogOpen(false)}
@@ -174,8 +164,6 @@ const AccountSettings = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Delete Account Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}

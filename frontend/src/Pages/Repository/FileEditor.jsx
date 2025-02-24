@@ -6,30 +6,26 @@ import {
   Tooltip,
   Typography,
   Alert,
-  Switch,
   Divider,
+  useTheme,
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
+
 import { motion } from "framer-motion";
 import CodeMirror from "@uiw/react-codemirror";
 import { dracula, githubLight } from "@uiw/codemirror-themes-all";
 import { javascript } from "@codemirror/lang-javascript";
+import handleCopy from "../../CustomHooks/handleCopy";
 
 const FileEditor = ({ file }) => {
   if (!file) return <Typography>Select a file to view its content</Typography>;
 
+  const theme = useTheme(); // Get MUI theme
+  const isDarkMode = theme.palette.mode === "dark";
+
   const [copied, setCopied] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [theme, setTheme] = useState("light");
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(file.content);
-    setSnackbarMessage("File content copied!");
-    setCopied(true);
-  };
 
   const handleDownload = () => {
     const element = document.createElement("a");
@@ -43,8 +39,6 @@ const FileEditor = ({ file }) => {
     setCopied(true);
   };
 
-  const toggleTheme = () => setTheme(theme === "light" ? "dark" : "light");
-
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
@@ -55,14 +49,15 @@ const FileEditor = ({ file }) => {
         sx={{
           flexGrow: 1,
           p: 2,
-          bgcolor: theme === "dark" ? "#282c34" : "#fff",
+          bgcolor: theme.palette.background.paper, // Dynamic background
           borderRadius: 2,
           boxShadow: 3,
           width: "100%",
           minWidth: "1000px",
-          maxWidth: "1200px", // Set a max width for better responsiveness
+          maxWidth: "1200px",
           margin: "auto",
           minHeight: "800px",
+          color: theme.palette.text.primary, // Dynamic text color
         }}
       >
         {/* Header with animations */}
@@ -79,32 +74,26 @@ const FileEditor = ({ file }) => {
               mb: 1,
             }}
           >
-            <Typography
-              variant="h6"
-              sx={{ color: theme === "dark" ? "#fff" : "#000" }}
-            >
-              {file.name}
-            </Typography>
+            <Typography variant="h6">{file.name}</Typography>
 
             {/* Toolbar */}
             <Box sx={{ display: "flex", gap: 1 }}>
-              {/* Theme Toggle */}
-              <Tooltip title="Toggle Theme">
-                <IconButton onClick={toggleTheme}>
-                  {theme === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
-                </IconButton>
-              </Tooltip>
-
               {/* Copy Content */}
               <Tooltip title="Copy Content">
-                <IconButton onClick={handleCopy}>
+                <IconButton
+                  onClick={() => {
+                    handleCopy(file.content, setCopied);
+                    setSnackbarMessage("File content copied!");
+                  }}
+                  color="inherit"
+                >
                   <ContentCopyIcon />
                 </IconButton>
               </Tooltip>
 
               {/* Download File */}
               <Tooltip title="Download File">
-                <IconButton onClick={handleDownload}>
+                <IconButton onClick={handleDownload} color="inherit">
                   <CloudDownloadIcon />
                 </IconButton>
               </Tooltip>
@@ -114,7 +103,7 @@ const FileEditor = ({ file }) => {
 
         <Divider sx={{ mb: 2 }} />
 
-        {/* Fixed Height Scrollable Code Editor */}
+        {/* Code Editor */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -124,25 +113,27 @@ const FileEditor = ({ file }) => {
             sx={{
               borderRadius: 2,
               overflow: "hidden",
-              height: "400px", // Fixed height for consistency
-              maxHeight: "50vh", // Ensures responsiveness on smaller screens
-              minHeight: "800px", // Prevents collapsing
+              height: "400px",
+              maxHeight: "50vh",
+              minHeight: "800px",
               display: "flex",
               flexDirection: "column",
-              border: "1px solid rgba(0, 0, 0, 0.1)",
+              border: `1px solid ${theme.palette.divider}`,
             }}
           >
             <CodeMirror
               value={file.content}
               extensions={[javascript()]}
-              theme={theme === "dark" ? dracula : githubLight}
+              theme={isDarkMode ? dracula : githubLight}
               options={{
                 readOnly: true,
                 lineNumbers: true,
               }}
               style={{
-                flexGrow: 1, // Ensures editor stays within fixed height
-                overflowY: "auto", // Enables scrolling for long content
+                flexGrow: 1,
+                overflowY: "auto",
+                backgroundColor: theme.palette.background.default,
+                color: theme.palette.text.primary,
               }}
             />
           </Box>
@@ -154,7 +145,7 @@ const FileEditor = ({ file }) => {
           sx={{
             textAlign: "right",
             mt: 1,
-            color: theme === "dark" ? "#aaa" : "#666",
+            color: theme.palette.text.secondary,
           }}
         >
           Word Count: {file.content.split(/\s+/).length}
@@ -167,9 +158,7 @@ const FileEditor = ({ file }) => {
           onClose={() => setCopied(false)}
           anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
-          <Alert severity="success" sx={{ bgcolor: "#4caf50", color: "white" }}>
-            {snackbarMessage}
-          </Alert>
+          <Alert severity="success">{snackbarMessage}</Alert>
         </Snackbar>
       </Box>
     </motion.div>

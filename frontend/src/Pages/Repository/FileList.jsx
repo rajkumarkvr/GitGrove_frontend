@@ -10,14 +10,10 @@ import {
 import FolderIcon from "@mui/icons-material/Folder";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 import { Link } from "react-router-dom";
+import getFormattedDateTime from "../../CustomHooks/getFormattedDateTime";
 
-const FileList = ({ files, reponame }) => {
-  if (files == null || files.length === 0)
-    return (
-      <Typography variant="h5" color="info">
-        No files were found.
-      </Typography>
-    );
+const FileList = ({ files, reponame, username }) => {
+  if (files == null || files.length === 0) return;
   return (
     <List>
       {files.map((file, index) => (
@@ -41,7 +37,7 @@ const FileList = ({ files, reponame }) => {
             </ListItemIcon>
             <Typography
               component={Link}
-              to={`/repo/files/${reponame}/${file.name}`}
+              to={`/repo/files/${username}/${reponame}/${file.name}`}
               sx={{
                 textDecoration: "none",
                 color: "inherit",
@@ -72,7 +68,7 @@ const FileList = ({ files, reponame }) => {
               {file.commitMessage}
             </Typography>
             <Typography variant="caption" color="textSecondary">
-              {file.commitTime}
+              {getFormattedDateTime(file.commitTime)}
             </Typography>
           </Stack>
         </ListItem>

@@ -45,9 +45,9 @@ const Starred = () => {
           const response = await axiosInstance.get(
             `service/getstarredrepositories?username=${user.username}`
           );
+          console.log(response?.data?.repositories);
           setRepositories(response?.data?.repositories || []);
 
-          // Store starred repo IDs in a Set for easy lookup
           const starredRepoIds = new Set(
             response?.data?.repositories?.map((repo) => repo.id)
           );
@@ -91,22 +91,21 @@ const Starred = () => {
       const apiUrl = `service/AddStarToRepository?username=${user.username}&repoid=${repoId}`;
 
       if (isStarred) {
-        await axiosInstance.post(apiUrl); // Unstar the repo
+        console.log("is starred passed");
+        await axiosInstance.post(apiUrl);
         setStarredRepos((prev) => {
           const newSet = new Set(prev);
           newSet.delete(repoId);
           return newSet;
         });
-
-        // Remove unstarred repo from the list
         setRepositories((prevRepos) =>
           prevRepos.filter((repo) => repo.id !== repoId)
         );
       } else {
-        await axiosInstance.post(apiUrl); // Star the repo
+        console.log("is starred fails");
+        await axiosInstance.post(apiUrl);
         setStarredRepos((prev) => new Set(prev).add(repoId));
 
-        // Update the starred count
         setRepositories((prevRepos) =>
           prevRepos.map((repo) =>
             repo.id === repoId ? { ...repo, stars: repo.stars + 1 } : repo
@@ -127,9 +126,6 @@ const Starred = () => {
         sx={{ top: 0, left: 0, right: 0, zIndex: 1100, boxShadow: 2 }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-around" }}>
-          <Typography variant="h5" fontWeight="bold">
-            Starred repositories
-          </Typography>
           <Stack direction="row" spacing={20} alignItems="center">
             <TextField
               label="Search Repositories"
@@ -267,7 +263,7 @@ const Starred = () => {
                     }
                   >
                     <IconButton onClick={() => handleStarClick(repo.id)}>
-                      {starredRepos.has(repo.id) ? (
+                      {starredRepos.has(repo.id) || repo.isStarred ? (
                         <StarIcon sx={{ color: "gold" }} />
                       ) : (
                         <StarBorderIcon />

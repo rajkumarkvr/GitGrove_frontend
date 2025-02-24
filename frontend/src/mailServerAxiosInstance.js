@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const mailServerAxiosInstance = axios.create({
-  baseURL: "http://192.168.43.216:5000",
-  timeout: 10000,
+  baseURL: "http://172.17.23.190:5000",
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },

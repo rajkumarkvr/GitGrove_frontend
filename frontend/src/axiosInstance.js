@@ -3,8 +3,8 @@ import { setAuthToken } from "./CustomHooks/setToken";
 import getToken from "./CustomHooks/getAuthToken";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8080/GitGrove",
-  timeout: 10000,
+  baseURL: "http://172.17.23.190:8080/GitGrove",
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },

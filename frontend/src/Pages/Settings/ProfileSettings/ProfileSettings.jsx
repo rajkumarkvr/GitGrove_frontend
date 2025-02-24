@@ -18,6 +18,13 @@ import getCurrentUser from "../../../Contexts/getCurrentUser";
 import axiosInstance from "../../../axiosInstance";
 import setCurrentUser from "../../../Contexts/setCurrentUser";
 import cloudinaryInstance from "../../../cloudinaryInstance";
+import clearCookieAndCurrentUser from "../../../CustomHooks/clearCookie";
+import { setAuthToken } from "../../../CustomHooks/setToken";
+import getToken from "../../../CustomHooks/getAuthToken";
+import { useNavigate } from "react-router-dom";
+import validateUsername from "../../../CustomHooks/validateUsername";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dye2p5i78/image/upload";
 const UPLOAD_PRESET = "my_img_raj_007";
@@ -32,11 +39,13 @@ const ProfileSettings = () => {
   const [profileImage, setProfileImage] = useState(
     currentUser?.profile_url || ""
   );
+  const navigate = useNavigate();
   const [showCamera, setShowCamera] = useState(false);
   const [error, setError] = useState({ username: "", email: "", global: "" });
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorSnackbar, setErrorSnackbar] = useState(""); // New error state for Snackbar
+  const [showPassword, setShowPassword] = useState(false);
 
   // Upload Image to Cloudinary
   const uploadImageToCloudinary = async (file) => {
@@ -70,8 +79,11 @@ const ProfileSettings = () => {
   // Validate Inputs & Save Changes
   const handleSaveChanges = async () => {
     let newError = { username: "", email: "", password: "", global: "" };
+    let result = validateUsername(username);
+    if (!result.isValid) {
+      newError.username = result.message;
+    }
 
-    if (!username.trim()) newError.username = "Username cannot be empty!";
     if (!email.trim() || !emailRegex.test(email.trim()))
       newError.email = "Enter a valid email!";
     if (!password.trim()) newError.password = "Password cannot be empty!";
@@ -85,10 +97,13 @@ const ProfileSettings = () => {
 
     try {
       // **First API call: Login**
-      const loginResponse = await axiosInstance.post("/auth/login", {
-        identifier: currentUser.username,
-        password: password,
-      });
+      const loginResponse = await axiosInstance.post(
+        "/service/auth/isuserexists",
+        {
+          identifier: currentUser.username,
+          password: password,
+        }
+      );
     } catch (error) {
       console.error("Login error:", error);
       setErrorSnackbar("Invalid password! Check your password.");
@@ -98,17 +113,30 @@ const ProfileSettings = () => {
 
     try {
       // **Second API call: Update user profile**
+      const oldusername = currentUser.username;
       const response = await axiosInstance.put(`service/users/update/profile`, {
-        oldusername: currentUser.username,
+        oldusername: oldusername,
         oldemail: currentUser.email,
         username,
         email,
         profile_url: imageURL, // Ensure latest uploaded URL is used
       });
 
+      clearCookieAndCurrentUser();
+
       if (response.status === 200) {
         console.log("Updated Profile:", response.data);
         setCurrentUser(response.data);
+
+        setAuthToken(getToken());
+        const res2 = await axiosInstance.post(
+          "/service/RenameUsernameFolderServlet",
+          {
+            oldUsername: oldusername,
+            newUsername: username,
+          }
+        );
+        console.log(res2);
         setSuccessMessage("Profile updated successfully!");
       } else {
         throw new Error("Unexpected profile update response");
@@ -138,11 +166,6 @@ const ProfileSettings = () => {
         bgcolor: "background.paper",
       }}
     >
-      <Typography variant="h5" fontWeight="bold" gutterBottom>
-        Profile Settings
-      </Typography>
-
-      {/* Profile Picture Box */}
       <Box
         sx={{ position: "relative", display: "inline-block", mb: 3 }}
         onMouseEnter={() => setShowCamera(true)}
@@ -227,9 +250,22 @@ const ProfileSettings = () => {
         onChange={(e) => setPassword(e.target.value)}
         error={!!error.password}
         helperText={error.password}
+        type={showPassword ? "text" : "password"}
+        InputProps={{
+          endAdornment: (
+            <IconButton onClick={() => setShowPassword(!showPassword)}>
+              {showPassword ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          ),
+        }}
       />
 
-      {/* Save Changes Button */}
+      <Link
+        sx={{ ml: 30, cursor: "pointer", fontSize: "0.9rem" }}
+        onClick={() => navigate("/auth/reset-password")}
+      >
+        Forgot Password?
+      </Link>
       <Button
         variant="contained"
         fullWidth

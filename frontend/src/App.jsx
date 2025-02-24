@@ -23,6 +23,14 @@ import { setAuthToken } from "./CustomHooks/setToken";
 import getToken from "./CustomHooks/getAuthToken";
 import { RequiredAuth } from "./CustomHooks/RequiredAuth";
 import CollaborationInvite from "./Pages/Repository/CollaborationInvite/CollaborationInvite";
+import Explore from "./Pages/Repository/Explore/Explore";
+import DifferenceViewer from "./Pages/Repository/DifferenceViewer/DifferenceViewer";
+import LandingPage from "./Pages/LandingPage/LandingPage";
+import { ParallaxProvider } from "react-scroll-parallax";
+
+import { PullRequestWrapper } from "./Pages/PullRequest/PullRequestWrapper";
+import { ReviewAndMergeWrapper } from "./Pages/PullRequest/ReviewAndMergeWrapper";
+import AddSshKey from "./Pages/Settings/AddSshKey/AddSshKey";
 // import HomeIcon from "@mui/icons-material/Home";
 //1 unit = 8px by default in MUI
 // const repo = {
@@ -161,6 +169,14 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route
+          path="/"
+          element={
+            <ParallaxProvider>
+              <LandingPage />
+            </ParallaxProvider>
+          }
+        />
         <Route path="/" element={<Navigate to="/repositories" replace />} />
         <Route
           path="/"
@@ -175,15 +191,12 @@ function App() {
             path="repositories"
             element={
               <RequiredAuth>
-                <MyRepository
-                  title={"My repositories"}
-                  api={"/service/getAllRepositories"}
-                />
+                <MyRepository api={"/service/getAllRepositories"} />
               </RequiredAuth>
             }
           />
           <Route
-            path="/repo/:id"
+            path="/repo/:username/:reponame"
             element={
               <RequiredAuth>
                 <RepositoryDetails onBranchChange={onBranchChange} />
@@ -191,12 +204,20 @@ function App() {
             }
           />
           <Route
-            path="/repo/commits/:id"
+            path="/repo/createpullrequest"
+            element={<PullRequestWrapper />}
+          />
+          <Route
+            path="/repo/commits/:username/:reponame"
             element={
               <RequiredAuth>
                 <CommitList />
               </RequiredAuth>
             }
+          />
+          <Route
+            path="/repo/commits/commit/:username/:reponame/:commitHash"
+            element={<RequiredAuth>{<DifferenceViewer />}</RequiredAuth>}
           />
           {/* <Route
             path="/repo/files"
@@ -213,7 +234,7 @@ function App() {
           /> 
           ;*/}
           <Route
-            path="/repo/files/:repo/:id"
+            path="/repo/files/:username/:reponame/:filename"
             element={
               <RequiredAuth>
                 <RepositoryFileView
@@ -225,7 +246,7 @@ function App() {
             }
           />
           ;
-          <Route path="explore" element={<h1>Explore</h1>} />
+          <Route path="explore" element={<Explore />} />
           <Route
             path="create-repo"
             element={
@@ -242,8 +263,7 @@ function App() {
               </RequiredAuth>
             }
           />
-          <Route path="pull-requests" element={<h1>Pull Requets</h1>} />
-          <Route path="profile" element={<h1>Profile</h1>} />
+          <Route path="pull-requests" element={<ReviewAndMergeWrapper />} />
           {/* Nested Settings Route */}
           <Route
             path="/settings"
@@ -274,6 +294,15 @@ function App() {
               }
             />
             <Route
+              path="/settings/add-ssh-key"
+              element={
+                <RequiredAuth>
+                  <AddSshKey />
+                </RequiredAuth>
+              }
+            />
+
+            <Route
               path="account"
               element={
                 <RequiredAuth>
@@ -283,6 +312,7 @@ function App() {
             />
           </Route>
         </Route>
+
         <Route
           path="/register"
           element={

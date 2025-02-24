@@ -7,6 +7,7 @@ import {
   Container,
   Alert,
   Link,
+  IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import validateRegistrationData from "./registerValidate";
@@ -16,6 +17,7 @@ import Loading from "../../Components/Loading";
 import { setAuthToken } from "../../CustomHooks/setToken";
 import getToken from "../../CustomHooks/getAuthToken";
 import setCurrentUser from "../../Contexts/setCurrentUser";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -28,6 +30,8 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [storedValue, setStoredValue] = useLocalStorage("_user", {});
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [password, setPassword] = useState(false);
   const navigate = useNavigate();
   // console.log(getToken());
   const handleChange = (e) => {
@@ -51,7 +55,7 @@ const Register = () => {
           setCurrentUser(response.data.user);
           setAuthToken(getToken());
           setLoading(false);
-          navigate("/");
+          navigate("/repositories");
         } catch (error) {
           console.log(error.response.data.error);
           setLoading(false);
@@ -107,22 +111,43 @@ const Register = () => {
           onChange={handleChange}
         />
         {errors.email && <Alert severity="error">{errors.email}</Alert>}
+
         <TextField
           label="Password"
           name="password"
-          type="password"
           fullWidth
+          sx={{ mb: 2 }}
           onChange={handleChange}
+          type={password ? "text" : "password"}
+          InputProps={{
+            endAdornment: (
+              <IconButton onClick={() => setPassword(!password)}>
+                {password ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            ),
+          }}
         />
-
         {errors.password && <Alert severity="error">{errors.password}</Alert>}
+
         <TextField
           label="Confirm Password"
           name="confirmPassword"
-          type="password"
+          // variant="outlined"
           fullWidth
+          sx={{ mb: 2 }}
           onChange={handleChange}
+          type={showConfirmPassword ? "text" : "password"}
+          InputProps={{
+            endAdornment: (
+              <IconButton
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            ),
+          }}
         />
+
         {errors.confirmPassword && (
           <Alert severity="error">{errors.confirmPassword}</Alert>
         )}

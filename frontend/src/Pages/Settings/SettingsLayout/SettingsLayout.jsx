@@ -13,12 +13,13 @@ import {
 } from "@mui/material";
 import { useTheme } from "@emotion/react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack"; // Back icon
-import { AccountBox, Palette, Person } from "@mui/icons-material";
+import { AccountBox, Palette, Person, Key } from "@mui/icons-material";
 const drawerWidth = 240;
 const settingsMenu = [
   { text: "Profile", icon: <Person />, path: "profile-edit" },
   { text: "Account", icon: <AccountBox />, path: "account" },
   { text: "Theme", icon: <Palette />, path: "theme" },
+  { text: "SSH key", icon: <Key />, path: "add-ssh-key" },
 ];
 
 const SettingsLayout = () => {
@@ -44,7 +45,7 @@ const SettingsLayout = () => {
             size="small"
             variant="outlined"
             startIcon={<ArrowBackIcon fontSize="small" />}
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/repositories")}
             sx={{
               textTransform: "none", // Prevents all caps text
               padding: "4px 8px", // Reduces padding for a smaller size
@@ -87,11 +88,9 @@ const SettingsLayout = () => {
           ))}
         </List>
       </Drawer>
-
-      {/* Content Section */}
       <Box component="main" sx={{ flexGrow: 1, padding: 2, mr: 80 }}>
         <Toolbar />
-        <Outlet /> {/* Renders nested components */}
+        <Outlet />
       </Box>
     </Box>
   );

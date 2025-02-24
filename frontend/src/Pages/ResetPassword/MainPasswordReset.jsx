@@ -11,7 +11,7 @@ import {
 import mailServerAxiosInstance from "../../mailServerAxiosInstance";
 
 const MainPasswordReset = () => {
-  const { token } = useParams(); // Get token from URL
+  const { token } = useParams();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,7 +25,7 @@ const MainPasswordReset = () => {
 
     try {
       const response = await mailServerAxiosInstance.post(
-        "service/api/auth/reset-password",
+        "api/auth/reset-password",
         { token, password }
       );
       setMessage({ type: "success", text: response.data.message });

@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { motion } from "framer-motion";
 import axiosInstance from "../../../axiosInstance";
-import AppLogo from "/images/app_logo.png"; // GitGrove App Icon
+import AppLogo from "/images/Gitgrove.svg";
 
 const CollaborationInvite = () => {
   const navigate = useNavigate();
@@ -34,18 +34,17 @@ const CollaborationInvite = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [isPageLoading, setIsPageLoading] = useState(false);
 
-  useEffect(() => {
-    // Simulating initial page load animation
-    setTimeout(() => setIsPageLoading(false), 1000);
+  // useEffect(() => {
+  //   // Simulating initial page load animation
+  //   setTimeout(() => setIsPageLoading(false), 1000);
+  // }, [invitedUser, inviter]);
 
+  const handleAcceptInvite = async () => {
     if (!invitedUser.username || !invitedUser.repoName || !inviter.username) {
       setError("Invalid or missing invitation details.");
     }
-  }, [invitedUser, inviter]);
-
-  const handleAcceptInvite = async () => {
     setLoading(true);
     try {
       const response = await axiosInstance.post("/service/accept-invite", {
@@ -53,9 +52,9 @@ const CollaborationInvite = () => {
         inviteeUsername: invitedUser.username,
         repository: invitedUser.repoName,
       });
-
+      setLoading(false);
       console.log(response.data);
-      navigate(`/repositories/${invitedUser.repoName}`);
+      navigate(`/repo/${invitedUser.repoName}`);
     } catch (err) {
       console.error("Error accepting invite:", err);
       setError("Failed to accept the invitation. Please try again.");

@@ -1,5 +1,6 @@
-
 function getFormattedDateTime(timestamp) {
+  timestamp = timestamp.replaceAll("Z", "");
+
   const date = new Date(timestamp + "Z"); // Ensure UTC interpretation
   date.setHours(date.getHours() - 5);
   date.setMinutes(date.getMinutes() - 30);

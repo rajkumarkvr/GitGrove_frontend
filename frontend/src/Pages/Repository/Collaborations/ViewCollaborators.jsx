@@ -13,100 +13,58 @@ import {
   Typography,
   IconButton,
   Chip,
-  Box,
   Paper,
   Skeleton,
+  useTheme,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "../../../axiosInstance";
-
-// Sample Data with Better Image URLs
-const collaborators = [
-  {
-    id: 1,
-    username: "john_doe",
-    email: "john@example.com",
-    avatar: "https://i.pravatar.cc/100?img=10",
-  },
-  {
-    id: 2,
-    username: "alice_smith",
-    email: "alice@example.com",
-    avatar: "https://i.pravatar.cc/100?img=20",
-  },
-  {
-    id: 3,
-    username: "michael_brown",
-    email: "michael@example.com",
-    avatar: "https://i.pravatar.cc/100?img=30",
-  },
-  {
-    id: 4,
-    username: "sophia_white",
-    email: "sophia@example.com",
-    avatar: "https://i.pravatar.cc/100?img=40",
-  },
-];
-
-const pendingRequests = [
-  {
-    id: 5,
-    username: "emily_jones",
-    email: "emily@example.com",
-    avatar: "https://i.pravatar.cc/100?img=50",
-  },
-  {
-    id: 6,
-    username: "robert_wilson",
-    email: "robert@example.com",
-    avatar: "https://i.pravatar.cc/100?img=60",
-  },
-];
+import getCurrentUser from "../../../Contexts/getCurrentUser";
 
 const ViewCollaboratorsDialog = ({ open, handleClose, repoName }) => {
+  const theme = useTheme(); // Get the current theme mode
   const [tabIndex, setTabIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  //   const [collaborators, setCollaborators] = useState([]);
-  //   const [pendingRequests, setPendingRequests] = useState([]);
-  const dialogContentStyle = {
-    minHeight: "350px",
-    display: "flex",
-    flexDirection: "column",
-  };
+  const [collaborators, setCollaborators] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
 
-  // useEffect(() => {
-  //   if (open) {
-  //     const fetchCollaborators = async () => {
-  //       setLoading(true);
-  //       // try {
-  //       //   setLoading(true);
-  //       //   const response = await axiosInstance.get(
-  //       //     /service/repository/${repoName}/collaborators
-  //       //   );
-  //       //   setCollaborators(response.data.active);
-  //       //   setPendingRequests(response.data.requests);
-  //       //   setLoading(false);
-  //       // } catch (err) {
-  //       //   console.log(err);
-  //       //   setLoading(false);
-  //       // }
-  //     };
-  //     fetchCollaborators();
-  //   }
-  // }, [open, repoName]);
   useEffect(() => {
     if (open) {
-      setLoading(true);
-      setTimeout(() => setLoading(false), 10000);
+      const fetchCollaborators = async () => {
+        try {
+          setLoading(true);
+          const response = await axiosInstance.get(
+            `/service/getcollaborators?reponame=${encodeURIComponent(
+              repoName
+            )}&ownername=${encodeURIComponent(getCurrentUser()?.username)}`
+          );
+          const response2 = await axiosInstance.get(
+            `/service/getcollabrequests?reponame=${encodeURIComponent(
+              repoName
+            )}&ownername=${encodeURIComponent(getCurrentUser()?.username)}`
+          );
+
+          setCollaborators(response.data.users);
+          setPendingRequests(response2.data.users);
+          setLoading(false);
+        } catch (err) {
+          console.log(err);
+          setLoading(false);
+        }
+      };
+      fetchCollaborators();
     }
-  }, [open]);
+  }, [open, repoName]);
 
   // Function to render skeleton loaders
   const renderSkeletonList = (numItems = 4) => (
     <List>
       {Array.from({ length: numItems }).map((_, index) => (
-        <ListItem key={index} sx={{ borderBottom: "1px solid #ddd" }}>
+        <ListItem
+          key={index}
+          sx={{ borderBottom: `1px solid ${theme.palette.divider}` }}
+        >
           <ListItemAvatar>
             <Skeleton variant="circular" width={40} height={40} />
           </ListItemAvatar>
@@ -136,24 +94,37 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName }) => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            backgroundColor: "#f5f5f5",
+            backgroundColor: theme.palette.background.default,
+            color: theme.palette.text.primary,
           }}
         >
           View Collaborators - {repoName}
-          <IconButton onClick={handleClose}>
+          <IconButton
+            onClick={handleClose}
+            sx={{ color: theme.palette.text.primary }}
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
 
         {/* Tab Navigation */}
-        <Paper sx={{ borderBottom: 1, borderColor: "divider" }}>
+        <Paper
+          sx={{
+            borderBottom: 1,
+            borderColor: theme.palette.divider,
+            backgroundColor: theme.palette.background.paper,
+          }}
+        >
           <Tabs
             value={tabIndex}
             onChange={(e, newValue) => setTabIndex(newValue)}
             variant="fullWidth"
             sx={{
-              "& .MuiTab-root": { fontWeight: "bold" },
-              backgroundColor: "#fff",
+              "& .MuiTab-root": {
+                fontWeight: "bold",
+                color: theme.palette.text.primary,
+              },
+              "& .Mui-selected": { color: theme.palette.primary.main },
             }}
           >
             <Tab label="Collaborators" />
@@ -162,7 +133,14 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName }) => {
         </Paper>
 
         {/* Content Section */}
-        <DialogContent sx={dialogContentStyle}>
+        <DialogContent
+          sx={{
+            minHeight: "350px",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: theme.palette.background.default,
+          }}
+        >
           <AnimatePresence mode="wait">
             {tabIndex === 0 ? (
               <motion.div
@@ -179,7 +157,9 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName }) => {
                     {collaborators.map((user) => (
                       <ListItem
                         key={user.id}
-                        sx={{ borderBottom: "1px solid #ddd" }}
+                        sx={{
+                          borderBottom: `1px solid ${theme.palette.divider}`,
+                        }}
                       >
                         <ListItemAvatar>
                           <Avatar src={user.avatar} alt={user.username} />
@@ -187,12 +167,16 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName }) => {
                         <ListItemText
                           primary={user.username}
                           secondary={user.email}
+                          sx={{ color: theme.palette.text.primary }}
                         />
                       </ListItem>
                     ))}
                   </List>
                 ) : (
-                  <Typography align="center" sx={{ mt: 2, color: "gray" }}>
+                  <Typography
+                    align="center"
+                    sx={{ mt: 2, color: theme.palette.text.secondary }}
+                  >
                     No collaborators found.
                   </Typography>
                 )}
@@ -212,7 +196,9 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName }) => {
                     {pendingRequests.map((user) => (
                       <ListItem
                         key={user.id}
-                        sx={{ borderBottom: "1px solid #ddd" }}
+                        sx={{
+                          borderBottom: `1px solid ${theme.palette.divider}`,
+                        }}
                       >
                         <ListItemAvatar>
                           <Avatar src={user.avatar} alt={user.username} />
@@ -220,13 +206,17 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName }) => {
                         <ListItemText
                           primary={user.username}
                           secondary={user.email}
+                          sx={{ color: theme.palette.text.primary }}
                         />
                         <Chip label="Pending" color="warning" />
                       </ListItem>
                     ))}
                   </List>
                 ) : (
-                  <Typography align="center" sx={{ mt: 2, color: "gray" }}>
+                  <Typography
+                    align="center"
+                    sx={{ mt: 2, color: theme.palette.text.secondary }}
+                  >
                     No pending requests.
                   </Typography>
                 )}

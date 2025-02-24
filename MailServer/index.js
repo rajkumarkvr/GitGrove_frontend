@@ -68,7 +68,7 @@ app.post("/api/auth/request-reset", async (req, res) => {
           return res.status(500).json({ error: "Database error" });
         }
 
-        const resetLink = `http://localhost:5173/auth/main-reset-password/${resetToken}`;
+        const resetLink = `http://172.17.23.190:3000/auth/main-reset-password/${resetToken}`;
         console.log(resetLink);
         const mailOptions = {
           from: "rajkumar.ce2023@gmail.com",
@@ -176,7 +176,7 @@ app.post("/api/users/invite-collab", async (req, res) => {
     }
 
     const emailPromises = users.map((user) => {
-      const inviteLink = `http://localhost:5173/auth/collaboration-invite?inviterUsername=${encodeURIComponent(
+      const inviteLink = `http://172.17.23.190:3000/auth/collaboration-invite?inviterUsername=${encodeURIComponent(
         inviter.username
       )}&inviterAvatar=${encodeURIComponent(
         inviter.avator

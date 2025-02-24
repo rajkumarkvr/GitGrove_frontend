@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   MenuItem,
   Popover,
@@ -9,14 +9,24 @@ import {
   List,
   ListItem,
   ListItemText,
+  useTheme,
 } from "@mui/material";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import { motion } from "framer-motion"; // For smooth animations
+import { motion } from "framer-motion";
+import axiosInstance from "../../axiosInstance";
 
-const BranchSelector = ({ branches, selectedBranch, onBranchChange }) => {
-  console.log(branches);
+const BranchSelector = ({
+  branches,
+  selectedBranch,
+  username,
+  setRepos,
+  reponame,
+}) => {
+  const theme = useTheme(); // Get current theme mode
+  const isDarkMode = theme.palette.mode === "dark"; // Check if dark mode is active
+
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentBranch, setCurrentBranch] = useState(selectedBranch);
@@ -24,10 +34,25 @@ const BranchSelector = ({ branches, selectedBranch, onBranchChange }) => {
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
+  useEffect(() => {
+    sessionStorage.setItem("branch", currentBranch);
+  }, [currentBranch]);
   const handleBranchSelect = (branch) => {
     setCurrentBranch(branch);
-    onBranchChange({ target: { value: branch } });
-    handleClose();
+
+    const fetchBranchOrientedData = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `service/repo-info?username=${username}&reponame=${reponame}&branchname=${branch}`
+        );
+        setRepos(response.data);
+        handleClose();
+      } catch (error) {
+        console.error(error);
+        handleClose();
+      }
+    };
+    fetchBranchOrientedData();
   };
 
   const filteredBranches =
@@ -45,9 +70,9 @@ const BranchSelector = ({ branches, selectedBranch, onBranchChange }) => {
         gap: 2,
         my: 2,
         flexWrap: "wrap",
+        mt: 3,
       }}
     >
-      {/* New Creative Selector Design */}
       <motion.div whileHover={{ scale: 1.05 }}>
         <IconButton
           onClick={handleOpen}
@@ -55,23 +80,28 @@ const BranchSelector = ({ branches, selectedBranch, onBranchChange }) => {
             display: "flex",
             alignItems: "center",
             gap: 1,
-            border: "1px solid #ddd",
+            border: `1px solid ${theme.palette.divider}`,
             px: 2,
             py: 1,
             borderRadius: "8px",
-            backgroundColor: "white",
-            "&:hover": { backgroundColor: "#f5f5f5" },
+            backgroundColor: isDarkMode
+              ? theme.palette.background.paper
+              : "white",
+            "&:hover": { backgroundColor: isDarkMode ? "#333" : "#f5f5f5" },
           }}
         >
-          <AccountTreeIcon sx={{ color: "primary.main" }} />
-          <Typography variant="body1" fontWeight="bold">
+          <AccountTreeIcon sx={{ color: theme.palette.primary.main }} />
+          <Typography
+            variant="body1"
+            fontWeight="bold"
+            sx={{ color: theme.palette.text.primary }}
+          >
             {currentBranch}
           </Typography>
-          <ArrowDropDownIcon />
+          <ArrowDropDownIcon sx={{ color: theme.palette.text.primary }} />
         </IconButton>
       </motion.div>
 
-      {/* Popover Menu */}
       <Popover
         open={Boolean(anchorEl)}
         anchorEl={anchorEl}
@@ -79,7 +109,13 @@ const BranchSelector = ({ branches, selectedBranch, onBranchChange }) => {
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
       >
-        <Box sx={{ p: 2, width: 250 }}>
+        <Box
+          sx={{
+            p: 2,
+            width: 250,
+            backgroundColor: theme.palette.background.default,
+          }}
+        >
           {/* Search Field */}
           <TextField
             fullWidth
@@ -88,31 +124,47 @@ const BranchSelector = ({ branches, selectedBranch, onBranchChange }) => {
             variant="outlined"
             onChange={(e) => setSearchTerm(e.target.value)}
             value={searchTerm}
+            sx={{
+              input: { color: theme.palette.text.primary },
+              fieldset: { borderColor: theme.palette.divider },
+            }}
           />
 
-          {/* Branch List with Scroll Fix */}
+          {/* Branch List */}
           <List
             sx={{
               maxHeight: 200,
               overflowY: filteredBranches.length > 5 ? "auto" : "hidden",
               mt: 1,
-              borderTop: "1px solid #eee",
+              borderTop: `1px solid ${theme.palette.divider}`,
             }}
           >
             {filteredBranches.length > 0 ? (
               filteredBranches.map((branch) => (
                 <motion.div
                   key={branch}
-                  whileHover={{ scale: 1.02, backgroundColor: "#f1f1f1" }}
+                  whileHover={{
+                    scale: 1.02,
+                    backgroundColor: isDarkMode ? "#444" : "#f1f1f1",
+                  }}
                   transition={{ duration: 0.2 }}
                 >
                   <ListItem
-                    sx={{ cursor: "pointer" }}
+                    sx={{
+                      cursor: "pointer",
+                      color: theme.palette.text.primary,
+                      "&:hover": {
+                        backgroundColor: isDarkMode ? "#555" : "#eee",
+                      },
+                    }}
                     button
                     onClick={() => handleBranchSelect(branch)}
                     selected={branch === currentBranch}
                   >
-                    <ListItemText primary={branch} />
+                    <ListItemText
+                      primary={branch}
+                      sx={{ color: theme.palette.text.primary }}
+                    />
                     {branch === currentBranch && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
@@ -130,7 +182,7 @@ const BranchSelector = ({ branches, selectedBranch, onBranchChange }) => {
                 variant="body2"
                 sx={{
                   textAlign: "center",
-                  color: "gray",
+                  color: theme.palette.text.secondary,
                   py: 2,
                 }}
               >

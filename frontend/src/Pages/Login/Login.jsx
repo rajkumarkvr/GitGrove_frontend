@@ -6,6 +6,8 @@ import {
   Typography,
   Container,
   Link,
+  Alert,
+  IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import validateLoginData from "./loginValidate";
@@ -17,6 +19,7 @@ import getToken from "../../CustomHooks/getAuthToken";
 import setCurrentUser from "../../Contexts/setCurrentUser";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 const Login = () => {
   const [credentials, setCredentials] = useState({
     identifier: "",
@@ -26,6 +29,8 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
@@ -47,10 +52,18 @@ const Login = () => {
           console.log(getToken());
           setAuthToken(getToken());
           setLoading(false);
-          navigate("/");
+          navigate("/repositories");
         } catch (error) {
           setLoading(false);
-          console.log(error);
+          if (Object.keys(error.response.data).includes("password")) {
+            setErrors({ password: error.response.data.error });
+          } else {
+            setErrors({ identifier: error.response.data.error });
+          }
+          setTimeout(() => {
+            setErrors({});
+          }, 2000);
+          console.log(error.response);
           //   console.log(error.response);
           //   if (error.response.status === 400) {
           //     setErrors({ global: "Invalid login" });
@@ -90,7 +103,7 @@ const Login = () => {
           setLoading(false);
 
           setLoading(false);
-          navigate("/");
+          navigate("/repositories");
         } catch (err) {
           setLoading(false);
           console.log("Error in Google Login", err);
@@ -128,18 +141,31 @@ const Login = () => {
           name="identifier"
           fullWidth
           onChange={handleChange}
+          error={!!errors.identifier}
         />
-        {errors.identifier && (
+        {/* {errors.identifier && (
           <Alert severity="error">{errors.identifier}</Alert>
-        )}
+        )} */}
         <TextField
-          label="Password"
+          label="Enter your password"
           name="password"
-          type="password"
+          variant="outlined"
           fullWidth
+          sx={{ mb: 2 }}
           onChange={handleChange}
+          error={!!errors.password}
+          helperText={errors.password}
+          type={showPassword ? "text" : "password"}
+          InputProps={{
+            endAdornment: (
+              <IconButton onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            ),
+          }}
         />
-        {errors.password && <Alert severity="error">{errors.password}</Alert>}
+
+        {/* {errors.password && <Alert severity="error">{errors.password}</Alert>} */}
         {errors.global && <Alert severity="error">{errors.global}</Alert>}
         <Button
           variant="contained"

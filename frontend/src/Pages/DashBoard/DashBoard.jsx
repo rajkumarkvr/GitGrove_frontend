@@ -12,6 +12,7 @@ import {
   CssBaseline,
   Typography,
   Switch,
+  Avatar,
 } from "@mui/material";
 import {
   Folder,
@@ -26,7 +27,8 @@ import {
 import { useTheme } from "@emotion/react";
 import getCurrentUser from "../../Contexts/getCurrentUser";
 import getToken from "../../CustomHooks/getAuthToken";
-
+// import LogoTextLight from "/images/logotext/Logo text Primary.svg";
+// import LogoTextDark from "/images/logotext/Logo text Dark.svg";
 const drawerWidth = 240;
 const dashBoardItems = [
   { text: "My Repositories", icon: <Folder />, path: "repositories" },
@@ -42,7 +44,24 @@ const dashBoardItems = [
 ];
 const Dashboard = ({ toggleTheme }) => {
   const theme = useTheme();
+  // const logoSrc =
+  //   theme.palette.mode === "dark"
+  //     ? "/images/logotext/LogoTextPrimary.svg"
+  //     : "/images/logotext/LogoTextDark.svg";
+  // const logoSrc =
+  //   theme.palette.mode === "dark"
+  //     ? "/images/logotext/LogoTextWhite.svg"
+  //     : "/images/logotext/LogoTextDark.svg";
 
+  // const logoSrc =
+  //   theme.palette.mode === "dark"
+  //     ? "/images/logotext/LogoTextFullWhite.svg"
+  //     : "/images/logotext/LogoTextFullBlack.svg";
+
+  const logoSrc =
+    theme.palette.mode === "dark"
+      ? "/images/logotext/LogoTextFullWhite.svg"
+      : "/images/logotext/LogoTextDark.svg";
   const currentUser = getCurrentUser();
   return (
     <Box sx={{ display: "flex" }}>
@@ -78,20 +97,47 @@ const Dashboard = ({ toggleTheme }) => {
           >
             <Link to="/">
               <img
-                src="images/app_logo.png"
+                src={logoSrc}
                 alt="GitGrove"
-                height="40"
+                height="30"
                 style={{ cursor: "pointer" }}
               />
             </Link>
-            <Typography variant="caption" sx={{ fontWeight: "bold" }}>
-              GitGrove
-            </Typography>
           </Box>
-          <img
-            src={currentUser?.profile_url}
-            style={{ width: "40px", height: "40px", borderRadius: "50%" }}
-          />
+          <Link to="/settings/profile-edit" style={{ textDecoration: "none" }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 1,
+                position: "fixed",
+                right: 25,
+                p: 1,
+                mt: -3,
+                borderRadius: "8px",
+                bgcolor:
+                  theme.palette.mode === "dark" ? "grey.800" : "grey.100",
+                color: theme.palette.mode === "dark" ? "white" : "black",
+                transition: "background 0.3s ease-in-out",
+                "&:hover": {
+                  bgcolor:
+                    theme.palette.mode === "dark" ? "grey.700" : "grey.200",
+                },
+              }}
+            >
+              <Avatar src={currentUser?.profile_url} />
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: "bold",
+                  color: theme.palette.mode === "dark" ? "white" : "black",
+                }}
+              >
+                {currentUser?.username}
+              </Typography>
+            </Box>
+          </Link>
         </Toolbar>
         <List
           sx={{
@@ -110,15 +156,15 @@ const Dashboard = ({ toggleTheme }) => {
                   textDecoration: "none",
                   color: "inherit",
                   "&.active": {
-                    backgroundColor: theme.palette.primary.main, // Highlight active link
-                    color: theme.palette.primary.contrastText, // Change text color for contrast
-                    borderRadius: "4px", // Optional: Smooth rounded edges
+                    backgroundColor: theme.palette.primary.main,
+                    color: theme.palette.primary.contrastText,
+                    borderRadius: "4px",
                   },
                 }}
               >
                 <ListItemIcon
                   sx={{
-                    color: "inherit", // Ensure icon color changes too
+                    color: "inherit",
                   }}
                 >
                   {item.icon}
@@ -130,7 +176,6 @@ const Dashboard = ({ toggleTheme }) => {
         </List>
       </Drawer>
 
-      {/* Content Area */}
       <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 5 }}>
         <Outlet />
       </Box>

@@ -16,6 +16,7 @@ import {
   InputAdornment,
   Box,
   Chip,
+  useTheme,
 } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchIcon from "@mui/icons-material/Search";
@@ -39,6 +40,8 @@ const AddPeopleDialog = ({
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [users, setUsers] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
+  const theme = useTheme();
+
 
   // Handle user selection
   const handleUserSelect = (user) => {
@@ -105,16 +108,25 @@ const AddPeopleDialog = ({
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3 }}
+        style={{
+          backgroundColor: theme.palette.background.default,
+          color: theme.palette.text.primary,
+        }}
       >
         <DialogTitle
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            bgcolor: theme.palette.mode === "dark" ? "#333" : "#f5f5f5",
+            color: theme.palette.text.primary,
           }}
         >
           Add people to {repoName}
-          <IconButton onClick={handleClose}>
+          <IconButton
+            onClick={handleClose}
+            sx={{ color: theme.palette.text.primary }}
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
@@ -158,7 +170,7 @@ const AddPeopleDialog = ({
                 sx={{
                   position: "sticky",
                   top: 0,
-                  background: "white",
+                  background: theme.palette.background.paper,
                   zIndex: 10,
                   pb: 2,
                 }}
@@ -184,6 +196,13 @@ const AddPeopleDialog = ({
                       </InputAdornment>
                     ),
                   }}
+                  sx={{
+                    bgcolor: theme.palette.background.default,
+                    input: { color: theme.palette.text.primary },
+                    "& .MuiOutlinedInput-root": {
+                      "& fieldset": { borderColor: theme.palette.divider },
+                    },
+                  }}
                 />
               </Box>
 
@@ -197,7 +216,6 @@ const AddPeopleDialog = ({
                       (u) => u.id === user.id
                     );
 
-                    // Determine the appropriate label
                     let label = null;
                     if (user.isRequested) {
                       label =
@@ -214,7 +232,7 @@ const AddPeopleDialog = ({
                           "&:hover": {
                             backgroundColor: user.isRequested
                               ? "transparent"
-                              : "#f5f5f5",
+                              : theme.palette.action.hover,
                           },
                           cursor: user.isRequested ? "default" : "pointer",
                           opacity: user.isRequested ? 0.6 : 1,

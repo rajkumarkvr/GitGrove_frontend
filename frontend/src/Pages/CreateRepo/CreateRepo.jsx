@@ -64,11 +64,11 @@ const CreateRepo = () => {
         navigate("/repositories");
         console.log(response.data);
         setLoading(false);
-        setOpenSnackbar(true); // Show success message
+        setOpenSnackbar(true);
       } catch (error) {
         setLoading(false);
-        setOpenSnackbar(false); // Show error message
-        setErrorSnackbar(true); // Show error message
+        setOpenSnackbar(false);
+        setErrorSnackbar(true);
         console.log(error);
       }
       setRepoName("");
@@ -93,17 +93,14 @@ const CreateRepo = () => {
           gap: 2,
         }}
       >
-        {/* Title */}
         <Typography variant="h5" fontWeight="bold">
           Create a New Repository
         </Typography>
 
-        {/* Owner */}
         <Typography variant="body1" color="text.secondary">
           Owner: <strong>{username}</strong>
         </Typography>
 
-        {/* Repository Name Input */}
         <TextField
           label="Repository Name"
           variant="outlined"
@@ -113,7 +110,6 @@ const CreateRepo = () => {
           required
         />
 
-        {/* Description Input */}
         <TextField
           label="Description (Optional)"
           variant="outlined"
@@ -124,7 +120,6 @@ const CreateRepo = () => {
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        {/* Visibility Options */}
         <FormControl>
           <FormLabel>Repository Visibility</FormLabel>
           <RadioGroup
@@ -144,8 +139,6 @@ const CreateRepo = () => {
             />
           </RadioGroup>
         </FormControl>
-
-        {/* Create Button */}
         <Button
           variant="contained"
           color="primary"
@@ -155,8 +148,6 @@ const CreateRepo = () => {
         >
           Create Repository
         </Button>
-
-        {/* Snackbar Notification */}
         <Snackbar
           open={openSnackbar}
           autoHideDuration={2000}
@@ -172,7 +163,6 @@ const CreateRepo = () => {
             🎉 Repository "{repoName}" created successfully!
           </Alert>
         </Snackbar>
-        {/* Snackbar Notification */}
         <Snackbar
           open={errorSnackbar}
           autoHideDuration={2000}

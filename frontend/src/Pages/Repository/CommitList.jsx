@@ -20,42 +20,50 @@ import CommitIcon from "@mui/icons-material/Commit";
 import { motion } from "framer-motion";
 import { Link, useParams } from "react-router-dom"; // Import Link for navigation
 import BackLink from "../../Components/BackLink";
+import handleCopy from "../../CustomHooks/handleCopy";
 
 const CommitList = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [copiedHash, setCopiedHash] = useState("");
   const [commits, setCommits] = useState([]);
-  const [reponame, setReponame] = useState("");
-  const { id } = useParams();
-  const handleCopyHash = (hash) => {
-    navigator.clipboard.writeText(hash);
-    setCopiedHash(hash);
-    setSnackbarOpen(true);
-  };
+  // const [reponame, setReponame] = useState("");
+  const { username, reponame } = useParams();
 
   useEffect(() => {
     const c = sessionStorage.getItem("commits");
     if (c != null && c.length !== 0) {
       const commitDetails = JSON.parse(c);
-      // console.log("Mail" + ;
       setCommits(JSON.parse(commitDetails.commits));
-      setReponame(commitDetails.reponame);
     }
-    // return () => {
-
-    //   sessionStorage.removeItem("commits");
-    // };
+    // return sessionStorage.clear("commits");
   }, []);
+
   return (
     <>
-      <BackLink to={`/repo/${id}`} label="Back to repo" />
-      <Paper elevation={3} sx={{ p: 2, borderRadius: 2, bgcolor: "#f9f9f9" }}>
+      <BackLink to={`/repo/${username}/${reponame}`} label="Back to repo" />
+      <Paper
+        elevation={3}
+        sx={{
+          p: 2,
+          borderRadius: 2,
+          bgcolor: (theme) =>
+            theme.palette.mode === "dark" ? "#2e2e2e" : "#f9f9f9",
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            gutterBottom
+            sx={{
+              color: (theme) =>
+                theme.palette.mode === "dark" ? "#fff" : "#000",
+            }}
+          >
             <CommitIcon sx={{ mr: 1, color: "primary.main" }} /> Recent Commits
           </Typography>
         </motion.div>
@@ -85,13 +93,26 @@ const CommitList = () => {
                       <Typography
                         variant="body1"
                         fontWeight="bold"
-                        sx={{ color: "text.primary" }}
+                        sx={{
+                          color: (theme) =>
+                            theme.palette.mode === "dark"
+                              ? "#fff"
+                              : "text.primary",
+                        }}
                       >
                         {commit.message}
                       </Typography>
                     }
                     secondary={
-                      <Typography variant="body2" color="textSecondary">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: (theme) =>
+                            theme.palette.mode === "dark"
+                              ? "#b0b0b0"
+                              : "textSecondary",
+                        }}
+                      >
                         {commit.authorName} •{" "}
                         {new Date(commit.date).toLocaleString()}
                       </Typography>
@@ -101,20 +122,22 @@ const CommitList = () => {
                   {/* Commit Hash Link */}
                   <Tooltip title="View Commit Details">
                     <Link
-                      to={`/commit/${commit.hash || "2dt3gsf5"}`}
+                      to={`/repo/commits/commit/${username}/${reponame}/${commit.id}`}
                       style={{ textDecoration: "none" }}
                     >
                       <Typography
                         variant="body2"
                         sx={{
-                          color: "blue",
+                          color: (theme) =>
+                            theme.palette.mode === "dark"
+                              ? "lightblue"
+                              : "blue",
                           fontWeight: "bold",
                           cursor: "pointer",
                           mx: 1,
                         }}
                       >
-                        {"2dt3gsf5"}
-                        {/* {commit.hash.slice(0, 7)} */}
+                        {commit.id.slice(0, 7)}
                       </Typography>
                     </Link>
                   </Tooltip>
@@ -124,7 +147,10 @@ const CommitList = () => {
                     <motion.div whileTap={{ scale: 0.9 }}>
                       <IconButton
                         size="small"
-                        onClick={() => handleCopyHash(commit.hash)}
+                        onClick={() => {
+                          handleCopy(commit.id, setCopiedHash);
+                          setSnackbarOpen(true);
+                        }}
                       >
                         <ContentCopyIcon fontSize="small" />
                       </IconButton>

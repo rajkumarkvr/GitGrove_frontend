@@ -19,6 +19,7 @@ import {
   MenuItem as MuiMenuItem,
   Skeleton,
   useTheme,
+  Chip,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -30,7 +31,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../../axiosInstance";
 import getCurrentUser from "../../Contexts/getCurrentUser";
 import getFormattedDateTime from "../../CustomHooks/getFormattedDateTime";
-const MyRepositories = ({ title, api }) => {
+import { FolderOpen } from "@mui/icons-material";
+const MyRepositories = ({ api }) => {
   const [repositories, setRepositories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("updated");
@@ -134,16 +136,12 @@ const MyRepositories = ({ title, api }) => {
     );
   return (
     <Container maxWidth="lg" sx={{ mt: 10, mb: 4 }}>
-      {/* App Bar */}
       <AppBar
         position="fixed"
         color="default"
         sx={{ top: 0, left: 0, right: 0, zIndex: 1100, boxShadow: 2 }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-around" }}>
-          <Typography variant="h5" fontWeight="bold">
-            {title}
-          </Typography>
           <Stack direction="row" spacing={20} alignItems="center">
             <TextField
               label="Search Repositories"
@@ -196,6 +194,9 @@ const MyRepositories = ({ title, api }) => {
                   borderRadius: 2,
                   backgroundColor: theme.palette.background.paper,
                 }}
+                // onClick={() => {
+                //   navigate(`/repo/${repo.ownername}/${repo.name}`);
+                // }}
               >
                 <CardContent
                   sx={{
@@ -212,9 +213,33 @@ const MyRepositories = ({ title, api }) => {
                       alignItems: "center",
                     }}
                   >
-                    <Typography variant="h6" fontWeight="bold">
-                      {repo.name}
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                    >
+                      {repo.ownername}/{repo.name}
+                      <Chip
+                        label={repo.visibility}
+                        variant="outlined"
+                        color={
+                          repo.visibility === "PUBLIC" ? "info" : "success"
+                        }
+                        size="small"
+                        sx={{
+                          fontWeight: "bold",
+                          textTransform: "uppercase",
+                          borderRadius: 1,
+                          fontSize: "0.60rem",
+                          borderColor:
+                            repo.visibility === "PUBLIC"
+                              ? "primary.light"
+                              : "success.light",
+                          backgroundColor: "transparent",
+                        }}
+                      />
                     </Typography>
+
                     <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)}>
                       <MoreVertIcon />
                     </IconButton>
@@ -253,12 +278,14 @@ const MyRepositories = ({ title, api }) => {
                   }}
                 >
                   <Tooltip title="View Repository">
-                    <IconButton component={Link} to={`/repo/${repo.name}`}>
-                      <VisibilityIcon color="primary" />
+                    <IconButton
+                      component={Link}
+                      to={`/repo/${repo.ownername}/${repo.name}`}
+                    >
+                      <FolderOpen color="primary" />
                     </IconButton>
                   </Tooltip>
 
-                  {/* Star Button */}
                   <Tooltip title="Star Repository">
                     <IconButton onClick={() => handleStarClick(repo.id)}>
                       {starredRepos.has(repo.id) ? (

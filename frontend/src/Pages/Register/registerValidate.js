@@ -1,9 +1,12 @@
+import validateUsername from "../../CustomHooks/validateUsername";
+
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function validateRegistrationData(user, setErrors) {
   let errors = {};
 
-  if (!user.username.trim()) {
-    errors.username = "Username is required";
+  let result = validateUsername(user.username);
+  if (!result.isValid) {
+    errors.username = result.message;
   }
 
   if (!user.email.trim()) {

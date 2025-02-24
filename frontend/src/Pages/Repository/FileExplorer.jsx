@@ -7,6 +7,7 @@ import {
   TextField,
   Box,
   Typography,
+  useTheme,
 } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
@@ -15,10 +16,15 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { motion } from "framer-motion";
 import BranchSelector from "./BranchSelector";
 
-const FileExplorer = ({ files, onFileSelect }) => {
+const FileExplorer = ({ files, onFileSelect, slectedFilename = "" }) => {
   const [openFolders, setOpenFolders] = useState({});
   const [search, setSearch] = useState("");
-
+  const [selectedFileName, setSelectedFileName] = useState(slectedFilename);
+  const theme = useTheme();
+  const handleFileSelect = (file) => {
+    setSelectedFileName(file.name);
+    onFileSelect(file);
+  };
   const toggleFolder = useCallback((name) => {
     setOpenFolders((prev) => ({ ...prev, [name]: !prev[name] }));
   }, []);
@@ -120,7 +126,23 @@ const FileExplorer = ({ files, onFileSelect }) => {
                     whileHover={{ scale: 1.02 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <ListItem button onClick={() => onFileSelect(file)}>
+                    <ListItem
+                      button
+                      onClick={() => {
+                        onFileSelect(file);
+                        handleFileSelect(file);
+                      }}
+                      sx={{
+                        backgroundColor:
+                          selectedFileName === file.name
+                            ? theme.palette.mode === "dark"
+                              ? theme.palette.grey[800]
+                              : theme.palette.grey[300]
+                            : "transparent",
+                        borderRadius: "6px",
+                        transition: "background-color 0.2s ease-in-out",
+                      }}
+                    >
                       <InsertDriveFileIcon sx={{ mr: 1, color: "#66bb6a" }} />
                       <ListItemText
                         primary={file.name}
