@@ -38,6 +38,7 @@ const FileExplorer = ({
     sessionStorage.setItem("fetchBranch", "master");
     return "master";
   };
+  console.log("filesssssss", files);
   const handleFileSelect = (file) => {
     console.log("calling");
 

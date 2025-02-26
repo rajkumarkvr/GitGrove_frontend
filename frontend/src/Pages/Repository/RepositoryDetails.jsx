@@ -8,12 +8,14 @@ import getCurrentUser from "../../Contexts/getCurrentUser";
 import axiosInstance from "../../axiosInstance";
 import FileListSkeleton from "./FileListSkeleton";
 import EmptyRepository from "./EmptyRepository";
+import FileUploadButton from "../UploadFiles/FileUploadButton";
 
 const RepositoryDetails = ({ onBranchChange }) => {
   const navigate = useNavigate(); // For navigation
   const { username, reponame } = useParams();
   const [repo, setRepos] = useState({});
   const currentUserobj = getCurrentUser();
+  const [collab, setCollab] = useState(false);
   const [loading, setLoading] = useState(true);
   const getBranchname = () => {
     if (sessionStorage.getItem("fetchBranch")) {
@@ -21,10 +23,22 @@ const RepositoryDetails = ({ onBranchChange }) => {
     }
     return "master";
   };
+  const isACollaborator = async () => {
+    try {
+      const response = await axiosInstance.post(
+        `/service/user/collaborator?ownername=${username}&reponame=${reponame}&username=${currentUserobj?.username}`
+      );
+      console.log(response);
+      return response.data.isCollaborator;
+    } catch (error) {
+      console.error("Error checking if user is a collaborator:", error);
+      return false;
+    }
+  };
   useEffect(() => {
     const fetchRepoInfo = async () => {
       setLoading(true);
-      console.log(username);
+      console.log("use res", currentUserobj?.username == username);
       try {
         const response = await axiosInstance.get(
           `/service/repo-info?username=${username}&reponame=${reponame}&branchname=${getBranchname()}`
@@ -52,16 +66,37 @@ const RepositoryDetails = ({ onBranchChange }) => {
     }
     navigate(`/repo/commits/${username}/${reponame}`);
   };
+  useEffect(() => {
+    const isACollaborator = async () => {
+      try {
+        const response = await axiosInstance.post(
+          `/service/user/collaborator?ownername=${username}&reponame=${reponame}&username=${currentUserobj?.username}`
+        );
+        console.log(response.data);
+        // console.log(response.data.isCollaborator != "false");
+        setCollab(response.data.isCollaborator);
+      } catch (error) {
+        console.error("Error checking if user is a collaborator:", error);
+      }
+    };
+    isACollaborator();
+  }, []);
   return (
     <Box>
       {loading ? (
         <Skeleton variant="text" width="40%" height={40} />
       ) : (
-        <RepositoryHeader
-          username={username}
-          repoName={reponame}
-          sshUrl={repo.sshUrl}
-        />
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <RepositoryHeader
+            username={username}
+            repoName={reponame}
+            sshUrl={repo.sshUrl}
+          />
+
+          {(currentUserobj?.username == username || collab) && (
+            <FileUploadButton username={username} reponame={reponame} />
+          )}
+        </Box>
       )}
       {username == currentUserobj?.username &&
       repo.mainFiles &&
@@ -84,6 +119,7 @@ const RepositoryDetails = ({ onBranchChange }) => {
             <>
               <Skeleton variant="rounded" width={200} height={40} />
               <Skeleton variant="rounded" width={120} height={40} />
+              <Skeleton variant="rounded" width={120} height={40} />
             </>
           ) : (
             <>
@@ -95,6 +131,7 @@ const RepositoryDetails = ({ onBranchChange }) => {
                 reponame={reponame}
                 username={username}
               />
+
               <Button
                 variant="contained"
                 color="primary"

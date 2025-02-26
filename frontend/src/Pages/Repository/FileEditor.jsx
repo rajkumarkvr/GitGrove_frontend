@@ -30,7 +30,7 @@ const FileEditor = ({ file }) => {
 
   const handleDownload = () => {
     const element = document.createElement("a");
-    const fileBlob = new Blob([file.content], { type: "text/plain" });
+    const fileBlob = new Blob([file.content.content], { type: "text/plain" });
     element.href = URL.createObjectURL(fileBlob);
     element.download = file.name;
     document.body.appendChild(element);
@@ -39,7 +39,25 @@ const FileEditor = ({ file }) => {
     setSnackbarMessage("File downloaded successfully!");
     setCopied(true);
   };
-
+  const isImage = ["png", "jpg", "jpeg", "gif", "bmp", "svg", "webp"];
+  const isVideo = ["mp4", "webm", "ogg", "mov", "avi", "flv", "mkv"];
+  const isAudio = ["mp3", "wav", "ogg", "flac", "aac", "m4a"];
+  const fileExt = file.name.split(".").pop().toLowerCase();
+  const mimeTypes = {
+    mp4: "video/mp4",
+    webm: "video/webm",
+    ogg: "video/ogg",
+    mov: "video/quicktime",
+    mp3: "audio/mpeg",
+    wav: "audio/wav",
+    aac: "audio/aac",
+    flac: "audio/flac",
+  };
+  const getMimeType = (fileExt) => {
+    console.log(fileExt);
+    mimeTypes[fileExt?.toLowerCase()] || "application/octet-stream";
+  };
+  // console.log(getMimeType("mp4"));
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
@@ -83,7 +101,7 @@ const FileEditor = ({ file }) => {
               <Tooltip title="Copy Content">
                 <IconButton
                   onClick={() => {
-                    handleCopy(file.content, setCopied);
+                    handleCopy(file.content.content, setCopied);
                     setSnackbarMessage("File content copied!");
                   }}
                   color="inherit"
@@ -122,21 +140,52 @@ const FileEditor = ({ file }) => {
               border: `1px solid ${theme.palette.divider}`,
             }}
           >
-            <CodeMirror
-              value={file.content}
-              extensions={[javascript()]}
-              theme={isDarkMode ? dracula : githubLight}
-              options={{
-                readOnly: true,
-                lineNumbers: true,
-              }}
-              style={{
-                flexGrow: 1,
-                overflowY: "auto",
-                backgroundColor: theme.palette.background.default,
-                color: theme.palette.text.primary,
-              }}
-            />
+            {isImage.includes(fileExt) ? (
+              // <img
+              //   width={file.content.width + "px"}
+              //   height={file.content.height + "px"}
+              <img
+                src={`data:image/${fileExt};base64,${file.content.content}`}
+                alt={file.name}
+                style={{ maxWidth: "100%", height: "auto" }}
+              />
+            ) : isVideo.includes(fileExt) ? (
+              <video controls style={{ maxWidth: "100%", height: "auto" }}>
+                <source
+                  src={`data:${getMimeType(fileExt)};base64,${
+                    file.content.content
+                  }`}
+                  type={getMimeType(fileExt)}
+                />
+                Your browser does not support the video tag.
+              </video>
+            ) : isAudio.includes(fileExt) ? (
+              <audio controls>
+                <source
+                  src={`data:${getMimeType(fileExt)};base64,${
+                    file.content.content
+                  }`}
+                  type={getMimeType(fileExt)}
+                />
+                Your browser does not support the audio tag.
+              </audio>
+            ) : (
+              <CodeMirror
+                value={file.content.content}
+                extensions={[javascript()]}
+                theme={isDarkMode ? dracula : githubLight}
+                options={{
+                  readOnly: true,
+                  lineNumbers: true,
+                }}
+                style={{
+                  flexGrow: 1,
+                  overflowY: "auto",
+                  backgroundColor: theme.palette.background.default,
+                  color: theme.palette.text.primary,
+                }}
+              />
+            )}
           </Box>
         </motion.div>
 
@@ -149,10 +198,9 @@ const FileEditor = ({ file }) => {
             color: theme.palette.text.secondary,
           }}
         >
-          Word Count: {file.content.split(/\s+/).length}
+          Word Count: {file?.content?.content?.split(/\s+/)?.length}
         </Typography>
 
-        {/* Snackbar Notification */}
         <Snackbar
           open={copied}
           autoHideDuration={2000}

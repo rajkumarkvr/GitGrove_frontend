@@ -43,13 +43,13 @@ const Explore = () => {
   const [isFetching, setIsFetching] = useState(false);
   const [starredRepos, setStarredRepos] = useState(new Set());
   const [topRepositories, setTopRepositories] = useState([]);
+
   // Fetch repositories from API
   const fetchRepositories = async (searchTerm = "", page = 1) => {
     if (isFetching) return;
     if (searchTerm !== "") setRepositories([]);
     setIsFetching(true);
     setLoading(true);
-    // setRepositories(mockRepositories);
     try {
       console.log("Fetching repositories");
       const response = await axiosInstance.get(
@@ -64,25 +64,30 @@ const Explore = () => {
         }
       );
 
-      console.log(response.data.repositories);
       const newRepositories = response.data?.repositories;
-      if (newRepositories == undefined || newRepositories == null) {
+      if (!newRepositories) {
         return;
       }
-      // setRepositories(newRepositories);
-      if (newRepositories && newRepositories.length === 0) {
+      if (newRepositories.length === 0) {
         setHasMore(false);
         return;
       }
 
-      // setRepositories(newRepositories);
       setRepositories((prevRepos) => {
         const existingRepoIds = new Set(prevRepos.map((repo) => repo.id));
         const filteredNewRepos = newRepositories.filter(
           (repo) => !existingRepoIds.has(repo.id)
         );
-
         return [...prevRepos, ...filteredNewRepos];
+      });
+
+      // Update starredRepos with initial starred status
+      setStarredRepos((prev) => {
+        const newSet = new Set(prev);
+        newRepositories.forEach((repo) => {
+          if (repo.isStarred) newSet.add(repo.id);
+        });
+        return newSet;
       });
     } catch (error) {
       console.error("Error fetching repositories:", error);
@@ -92,6 +97,7 @@ const Explore = () => {
     }
   };
 
+  // Fetch top repositories
   useEffect(() => {
     const fetchTopRepositories = async () => {
       try {
@@ -105,18 +111,27 @@ const Explore = () => {
           }
         );
         console.log(response.data.repositories);
-        setTopRepositories(response.data.repositories);
+        setTopRepositories(response.data.repositories || []);
+
+        // Initialize starredRepos with top repositories' starred status
+        setStarredRepos((prev) => {
+          const newSet = new Set(prev);
+          response.data.repositories.forEach((repo) => {
+            if (repo.isStarred) newSet.add(repo.id);
+          });
+          return newSet;
+        });
       } catch (error) {
         console.error("Error fetching top repositories:", error);
       }
     };
     fetchTopRepositories();
+    fetchRepositories(searchTerm, page);
   }, []);
 
   // Handle sorting
   const sortedRepositories = useMemo(() => {
     let sortedRepos = [...repositories];
-
     switch (sorting) {
       case "most_stars":
         sortedRepos.sort((a, b) => b.stars - a.stars);
@@ -132,7 +147,6 @@ const Explore = () => {
       default:
         break;
     }
-
     return sortedRepos;
   }, [repositories, sorting]);
 
@@ -146,7 +160,7 @@ const Explore = () => {
 
   // Handle star click
   const handleStarClick = async (e, repoId) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent navigation
     const user = getCurrentUser();
     if (!user) {
       navigate("/login");
@@ -161,19 +175,19 @@ const Explore = () => {
           params: { username: user.username, repoid: repoId },
         }
       );
-      console.log(response);
       if (response.status === 200) {
         setStarredRepos((prev) => {
           const newSet = new Set(prev);
-          if (newSet.has(repoId)) {
-            newSet.delete(repoId); // Remove if already starred
+          const wasStarred = newSet.has(repoId);
+          if (wasStarred) {
+            newSet.delete(repoId);
           } else {
-            newSet.add(repoId); // Add if not starred
+            newSet.add(repoId);
           }
           return newSet;
         });
 
-        // Update repository stars count
+        // Update both repositories and topRepositories
         setRepositories((prevRepos) =>
           prevRepos.map((repo) =>
             repo.id === repoId
@@ -182,6 +196,21 @@ const Explore = () => {
                   stars: starredRepos.has(repoId)
                     ? repo.stars - 1
                     : repo.stars + 1,
+                  isStarred: !starredRepos.has(repoId), // Toggle starred status
+                }
+              : repo
+          )
+        );
+
+        setTopRepositories((prevTopRepos) =>
+          prevTopRepos.map((repo) =>
+            repo.id === repoId
+              ? {
+                  ...repo,
+                  stars: starredRepos.has(repoId)
+                    ? repo.stars - 1
+                    : repo.stars + 1,
+                  isStarred: !starredRepos.has(repoId), // Toggle starred status
                 }
               : repo
           )
@@ -191,31 +220,29 @@ const Explore = () => {
       console.error("Error updating star:", error);
     }
   };
-  // Handle repository click
+
   const handleRepoClick = (username, repoName) => {
     navigate(`/repo/${username}/${repoName}`);
   };
 
-  // Infinite scroll handler
   const handleScroll = useCallback(() => {
     if (
       window.innerHeight + document.documentElement.scrollTop + 50 >=
       document.documentElement.offsetHeight
     ) {
+      console.log("has more" + hasMore);
       if (hasMore && !isFetching) setPage((prevPage) => prevPage + 1);
     }
   }, [hasMore, isFetching]);
 
   useEffect(() => {
-    console.log("Scrolling");
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [handleScroll]);
 
   useEffect(() => {
     fetchRepositories(searchTerm, page);
   }, [searchTerm, page]);
-
   return (
     <Container maxWidth="lg" sx={{ pt: 3 }}>
       {/* Header */}
@@ -256,10 +283,7 @@ const Explore = () => {
         <Grid item xs={8}>
           <List>
             {sortedRepositories.map((repo) => (
-              <motion.div
-                key={repo.id}
-                whileHover={{ scale: 1.02, cursor: "pointer" }}
-              >
+              <motion.div key={repo.id} whileHover={{ scale: 1.02 }}>
                 <Paper
                   sx={{ p: 2, mb: 1, display: "flex" }}
                   onClick={() =>
@@ -269,13 +293,11 @@ const Explore = () => {
                   <Avatar src={repo.owner.avatar} sx={{ mr: 2 }} />
                   <ListItemText
                     primary={repo.name}
-                    secondary={`${repo.owner.username} • ${repo.stars} ⭐`}
+                    secondary={`${repo.owner.username}`}
                   />
-
-                  {/* Star Button */}
                   <Tooltip title="Star Repository">
                     <IconButton onClick={(e) => handleStarClick(e, repo.id)}>
-                      {starredRepos.has(repo.id) || repo.isStarred ? (
+                      {starredRepos.has(repo.id) ? (
                         <StarIcon color="warning" />
                       ) : (
                         <StarBorderIcon />
@@ -289,45 +311,52 @@ const Explore = () => {
               </motion.div>
             ))}
           </List>
+          {isFetching && <CircularProgress />}
         </Grid>
-        {isFetching && <CircularProgress />}
-        <Paper sx={{ p: 2, mt: 2, ml: 10, position: "absolute", right: 100 }}>
-          <Typography variant="h6" gutterBottom>
-            🔥 Top Starred Repositories
-          </Typography>
-          <List>
-            {topRepositories &&
-              topRepositories.length > 0 &&
-              topRepositories.map((repo) => (
-                <ListItem
-                  key={repo.id}
-                  button
-                  onClick={() =>
-                    navigate(`/repo/${repo.owner.username}/${repo.name}`)
-                  }
-                >
-                  <ListItemAvatar>
-                    <Avatar src={repo.owner.avatar} />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={repo.name}
-                    secondary={`${repo.owner.username} • ${repo.stars} ⭐`}
-                  />
-                  <Tooltip title="Star Repository">
-                    <IconButton
-                      onClick={(event) => handleStarClick(event, repo.id)}
-                    >
-                      {starredRepos.has(repo.id) ? (
-                        <StarIcon color="warning" />
-                      ) : (
-                        <StarBorderIcon />
-                      )}
-                    </IconButton>
-                  </Tooltip>
-                </ListItem>
-              ))}
-          </List>
-        </Paper>
+
+        {/* Top Starred Repositories */}
+        <Grid item xs={4}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              🔥 Top Starred Repositories
+            </Typography>
+            <List>
+              {topRepositories && topRepositories.length > 0 ? (
+                topRepositories.map((repo) => (
+                  <ListItem
+                    key={repo.id}
+                    button
+                    onClick={() =>
+                      navigate(`/repo/${repo.owner.username}/${repo.name}`)
+                    }
+                  >
+                    <ListItemAvatar>
+                      <Avatar src={repo.owner.avatar} />
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={repo.name}
+                      secondary={`${repo.owner.username}`}
+                    />
+                    <Tooltip title="Star Repository">
+                      <IconButton onClick={(e) => handleStarClick(e, repo.id)}>
+                        {starredRepos.has(repo.id) ? (
+                          <StarIcon color="warning" />
+                        ) : (
+                          <StarBorderIcon />
+                        )}
+                        <Typography variant="body2" sx={{ ml: 0.5 }}>
+                          {repo.stars}
+                        </Typography>
+                      </IconButton>
+                    </Tooltip>
+                  </ListItem>
+                ))
+              ) : (
+                <Typography>No top repositories available.</Typography>
+              )}
+            </List>
+          </Paper>
+        </Grid>
       </Grid>
     </Container>
   );

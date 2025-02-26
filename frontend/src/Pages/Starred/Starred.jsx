@@ -123,7 +123,7 @@ const Starred = () => {
       <AppBar
         position="fixed"
         color="default"
-        sx={{ top: 0, left: 0, right: 0, zIndex: 1100, boxShadow: 2 }}
+        sx={{ top: 0, left: 0, right: 0, zIndex: 110, boxShadow: 2 }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-around" }}>
           <Stack direction="row" spacing={20} alignItems="center">

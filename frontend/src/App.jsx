@@ -31,6 +31,7 @@ import { ParallaxProvider } from "react-scroll-parallax";
 import { PullRequestWrapper } from "./Pages/PullRequest/PullRequestWrapper";
 import { ReviewAndMergeWrapper } from "./Pages/PullRequest/ReviewAndMergeWrapper";
 import AddSshKey from "./Pages/Settings/AddSshKey/AddSshKey";
+import UploadAndCommitWrapper from "./Pages/UploadFiles/UploadAndCommitWrapper";
 // import HomeIcon from "@mui/icons-material/Home";
 //1 unit = 8px by default in MUI
 // const repo = {
@@ -186,6 +187,10 @@ function App() {
           <Route
             path="/repo/createpullrequest/:username/:reponame"
             element={<PullRequestWrapper />}
+          />
+          <Route
+            path="/repo/fileupload/:ownername/:reponame"
+            element={<UploadAndCommitWrapper />}
           />
           <Route
             path="/repo/commits/:username/:reponame"

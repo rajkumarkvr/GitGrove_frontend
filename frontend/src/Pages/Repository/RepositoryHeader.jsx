@@ -41,6 +41,7 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
   const currentUser = getCurrentUser();
   const [animationPlaying, setAnimationPlaying] = useState(false);
   const [animationData, setAnimationData] = useState(null);
+  const [collab, setCollab] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     fetch("/assets/download-anime.json")
@@ -141,33 +142,41 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
     }
   };
   console.log(currentUser.username == username);
-  const isACollaborator = async () => {
-    try {
-      const response = await axiosInstance.post(
-        `/service/user/collaborator?ownername=${username}&reponame=${repoName}&username=${currentUser?.username}`
-      );
-      console.log(response.data);
-      return response.data.isCollaborator;
-    } catch (error) {
-      console.error("Error checking if user is a collaborator:", error);
-      return false;
-    }
-  };
+  useEffect(() => {
+    const isACollaborator = async () => {
+      try {
+        const response = await axiosInstance.post(
+          `/service/user/collaborator?ownername=${username}&reponame=${repoName}&username=${currentUser?.username}`
+        );
+        console.log(response.data);
+        // console.log(response.data.isCollaborator != "false");
+        setCollab(response.data.isCollaborator);
+      } catch (error) {
+        console.error("Error checking if user is a collaborator:", error);
+      }
+    };
+    isACollaborator();
+  }, []);
+
+  // let collab = false;
+  // isACollaborator().then((response) => {
+  //   collab = response;
+  // });
   return (
     <>
       <AppBar
-        position="sticky"
+        position="fixed"
         color="default"
         sx={{ boxShadow: 2, padding: 1 }}
       >
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Toolbar sx={{ display: "flex", justifyContent: "space-around" }}>
           <BackLink to="/repositories" />
           <Typography variant="h6">
             {username} / {repoName}
           </Typography>
 
           <Box sx={{ display: "flex", columnGap: 3 }}>
-            {(currentUser.username == username || isACollaborator()) && (
+            {(currentUser.username == username || collab) && (
               <>
                 <Tooltip title="View pull requests">
                   <Button

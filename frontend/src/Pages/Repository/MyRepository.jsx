@@ -31,6 +31,7 @@ import axiosInstance from "../../axiosInstance";
 import getCurrentUser from "../../Contexts/getCurrentUser";
 import getFormattedDateTime from "../../CustomHooks/getFormattedDateTime";
 import { FolderOpen } from "@mui/icons-material";
+import CreateRepositoryButton from "./CreateRepositoryButton";
 const MyRepositories = ({ api }) => {
   const [repositories, setRepositories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -46,6 +47,7 @@ const MyRepositories = ({ api }) => {
     const user = getCurrentUser();
     if (user) {
       const fetchRepos = async () => {
+        setLoading(true);
         try {
           const response = await axiosInstance.get(
             `${api}?username=${user.username}`
@@ -138,7 +140,7 @@ const MyRepositories = ({ api }) => {
       <AppBar
         position="fixed"
         color="default"
-        sx={{ top: 0, left: 0, right: 0, zIndex: 1100, boxShadow: 2 }}
+        sx={{ top: 0, left: 0, right: 0, zIndex: 1000, boxShadow: 2 }}
       >
         <Toolbar sx={{ display: "flex", justifyContent: "space-around" }}>
           <Stack direction="row" spacing={20} alignItems="center">
@@ -161,11 +163,11 @@ const MyRepositories = ({ api }) => {
                 <MenuItem value="stars">Stars</MenuItem>
               </Select>
             </FormControl>
+            <CreateRepositoryButton />
           </Stack>
         </Toolbar>
       </AppBar>
 
-      {/* Repositories List */}
       <Box
         sx={{
           mt: 12,
@@ -192,10 +194,11 @@ const MyRepositories = ({ api }) => {
                   boxShadow: 3,
                   borderRadius: 2,
                   backgroundColor: theme.palette.background.paper,
+                  cursor: "pointer",
                 }}
-                // onClick={() => {
-                //   navigate(`/repo/${repo.ownername}/${repo.name}`);
-                // }}
+                onClick={() => {
+                  navigate(`/repo/${repo.ownername}/${repo.name}`);
+                }}
               >
                 <CardContent
                   sx={{
@@ -218,30 +221,27 @@ const MyRepositories = ({ api }) => {
                       sx={{ display: "flex", alignItems: "center", gap: 1 }}
                     >
                       {repo.ownername}/{repo.name}
-                      <Chip
-                        label={repo.visibility}
-                        variant="outlined"
-                        color={
-                          repo.visibility === "PUBLIC" ? "info" : "success"
-                        }
-                        size="small"
-                        sx={{
-                          fontWeight: "bold",
-                          textTransform: "uppercase",
-                          borderRadius: 1,
-                          fontSize: "0.60rem",
-                          borderColor:
-                            repo.visibility === "PUBLIC"
-                              ? "primary.light"
-                              : "success.light",
-                          backgroundColor: "transparent",
-                        }}
-                      />
                     </Typography>
-
-                    <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)}>
+                    <Chip
+                      label={repo.visibility}
+                      variant="outlined"
+                      color={repo.visibility === "PUBLIC" ? "info" : "success"}
+                      size="small"
+                      sx={{
+                        fontWeight: "bold",
+                        textTransform: "uppercase",
+                        borderRadius: 1,
+                        fontSize: "0.60rem",
+                        borderColor:
+                          repo.visibility === "PUBLIC"
+                            ? "primary.light"
+                            : "success.light",
+                        backgroundColor: "transparent",
+                      }}
+                    />
+                    {/* <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)}>
                       <MoreVertIcon />
-                    </IconButton>
+                    </IconButton> */}
                   </Box>
 
                   <Typography variant="body2" color="text.secondary">
@@ -286,7 +286,12 @@ const MyRepositories = ({ api }) => {
                   </Tooltip>
 
                   <Tooltip title="Star Repository">
-                    <IconButton onClick={() => handleStarClick(repo.id)}>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStarClick(repo.id);
+                      }}
+                    >
                       {starredRepos.has(repo.id) ? (
                         <StarIcon color="warning" />
                       ) : (

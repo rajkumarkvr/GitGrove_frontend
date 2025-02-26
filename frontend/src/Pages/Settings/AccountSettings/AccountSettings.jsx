@@ -116,7 +116,7 @@ const AccountSettings = () => {
             </Button>
           </motion.div>
 
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          {/* <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               variant="contained"
               color="error"
@@ -127,7 +127,7 @@ const AccountSettings = () => {
             >
               Delete Account
             </Button>
-          </motion.div>
+          </motion.div> */}
         </Paper>
 
         <Paper

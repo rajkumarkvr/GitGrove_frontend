@@ -10,6 +10,7 @@ export const ReviewAndMergeWrapper = () => {
   const [merged, setMerged] = useState(false);
   const oldCode = 'console.log("Hello, World!");';
   const newCode = 'console.log("Hello, Universe!");';
+  const [selectedResolution, setSelectedResolution] = useState("");
   const currentUser = getCurrentUser();
   const {
     id,
@@ -86,7 +87,7 @@ export const ReviewAndMergeWrapper = () => {
   const handleMerge = async () => {
     try {
       const response = await axiosInstance.post(
-        `/service/pull-request/merge?id=${id}&username=${currentUser.username}`
+        `/service/pull-request/merge?id=${id}&username=${currentUser.username}&strategy=${selectedResolution}`
       );
       console.log(response.data);
       setMerged(true);
@@ -115,6 +116,8 @@ export const ReviewAndMergeWrapper = () => {
       prid={id}
       merged={merged}
       setMerged={setMerged}
+      setSelectedResolution={setSelectedResolution}
+      selectedResolution={selectedResolution}
     />
   );
 };

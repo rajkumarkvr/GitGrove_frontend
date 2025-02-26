@@ -39,6 +39,9 @@ const ReviewAndMerge = ({
   prid,
   merged,
   setMerged,
+  onResolveConflict,
+  setSelectedResolution,
+  selectedResolution,
 }) => {
   const theme = useTheme();
   const commentsContainerRef = useRef(null);
@@ -46,6 +49,7 @@ const ReviewAndMerge = ({
   const [generalCommentText, setGeneralCommentText] = useState("");
   const [autoMergeLoading, setAutoMergeLoading] = useState(true);
   const [autoMergePossible, setAutoMergePossible] = useState(null);
+  const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
 
   useEffect(() => {
     checkAutoMerge();
@@ -82,6 +86,11 @@ const ReviewAndMerge = ({
   const confirmMerge = () => {
     onMerge();
     setMergeDialogOpen(false);
+  };
+
+  const handleResolveConflict = (strategy) => {
+    setSelectedResolution(strategy);
+    setConflictDialogOpen(false);
   };
 
   const handleSubmitComment = () => {
@@ -245,9 +254,18 @@ const ReviewAndMerge = ({
         ) : (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <ErrorOutline sx={{ color: theme.palette.error.main }} />
-            <Typography variant="body2" color="text.primary">
-              ❌ Auto-merging failed. Fix conflicts manually.
+            <Typography variant="body2">
+              ❌ Conflict detected. Choose a resolution strategy or fix it
+              manually.
             </Typography>
+            <Button
+              variant="contained"
+              color="info"
+              onClick={() => setConflictDialogOpen(true)}
+              startIcon={<AddComment />}
+            >
+              Resolve conflict
+            </Button>
           </Box>
         )}
       </Box>
@@ -375,7 +393,7 @@ const ReviewAndMerge = ({
             color="secondary"
             onClick={handleMerge}
             startIcon={<MergeType />}
-            disabled={!autoMergePossible}
+            disabled={!autoMergePossible && !selectedResolution}
           >
             Merge Changes
           </Button>
@@ -388,6 +406,34 @@ const ReviewAndMerge = ({
         onClose={() => setMerged(false)}
         message="Successfully merged!"
       />
+      <Dialog
+        open={conflictDialogOpen}
+        onClose={() => setConflictDialogOpen(false)}
+      >
+        <DialogTitle>Resolve Merge Conflict</DialogTitle>
+        <DialogContent>
+          <Typography>
+            A merge conflict was detected. Choose which version to keep or you
+            can manually resolve this conflict.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => handleResolveConflict("OURS")}
+            color="primary"
+            variant="contained"
+          >
+            Keep Target Branch
+          </Button>
+          <Button
+            onClick={() => handleResolveConflict("THEIRS")}
+            color="secondary"
+            variant="contained"
+          >
+            Override with Source Branch
+          </Button>
+        </DialogActions>
+      </Dialog>
       {/* Merge Confirmation Dialog */}
       <Dialog open={mergeDialogOpen} onClose={() => setMergeDialogOpen(false)}>
         <DialogTitle>Confirm Merge</DialogTitle>

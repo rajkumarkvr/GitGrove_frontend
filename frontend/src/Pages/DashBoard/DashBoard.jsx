@@ -25,8 +25,7 @@ import {
   CompareArrows,
 } from "@mui/icons-material";
 import { useTheme } from "@emotion/react";
-import getCurrentUser from "../../Contexts/getCurrentUser";
-import getToken from "../../CustomHooks/getAuthToken";
+import MainNavBar from "../../Components/MainNavBar";
 // import LogoTextLight from "/images/logotext/Logo text Primary.svg";
 // import LogoTextDark from "/images/logotext/Logo text Dark.svg";
 const drawerWidth = 240;
@@ -62,7 +61,7 @@ const Dashboard = ({ toggleTheme }) => {
     theme.palette.mode === "dark"
       ? "/images/logotext/LogoTextFullWhite.svg"
       : "/images/logotext/LogoTextDark.svg";
-  const currentUser = getCurrentUser();
+  // const currentUser = getCurrentUser();
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -80,6 +79,7 @@ const Dashboard = ({ toggleTheme }) => {
       </AppBar> */}
 
       {/* Sidebar Drawer */}
+      <MainNavBar />
       <Drawer
         variant="permanent"
         sx={{
@@ -104,40 +104,6 @@ const Dashboard = ({ toggleTheme }) => {
               />
             </Link>
           </Box>
-          <Link to="/settings/profile-edit" style={{ textDecoration: "none" }}>
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "center",
-                gap: 1,
-                position: "fixed",
-                right: 25,
-                p: 1,
-                mt: -3,
-                borderRadius: "8px",
-                bgcolor:
-                  theme.palette.mode === "dark" ? "grey.800" : "grey.100",
-                color: theme.palette.mode === "dark" ? "white" : "black",
-                transition: "background 0.3s ease-in-out",
-                "&:hover": {
-                  bgcolor:
-                    theme.palette.mode === "dark" ? "grey.700" : "grey.200",
-                },
-              }}
-            >
-              <Avatar src={currentUser?.profile_url} />
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  fontWeight: "bold",
-                  color: theme.palette.mode === "dark" ? "white" : "black",
-                }}
-              >
-                {currentUser?.username}
-              </Typography>
-            </Box>
-          </Link>
         </Toolbar>
         <List
           sx={{
