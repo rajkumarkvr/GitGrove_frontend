@@ -15,13 +15,19 @@ const RepositoryDetails = ({ onBranchChange }) => {
   const [repo, setRepos] = useState({});
   const currentUserobj = getCurrentUser();
   const [loading, setLoading] = useState(true);
-
+  const getBranchname = () => {
+    if (sessionStorage.getItem("fetchBranch")) {
+      return sessionStorage.getItem("fetchBranch");
+    }
+    return "master";
+  };
   useEffect(() => {
     const fetchRepoInfo = async () => {
       setLoading(true);
+      console.log(username);
       try {
         const response = await axiosInstance.get(
-          `/service/repo-info?username=${username}&reponame=${reponame}&branchname=${"master"}`
+          `/service/repo-info?username=${username}&reponame=${reponame}&branchname=${getBranchname()}`
         );
         console.log(response);
         setRepos(response.data);
@@ -83,11 +89,11 @@ const RepositoryDetails = ({ onBranchChange }) => {
             <>
               <BranchSelector
                 branches={repo.branches}
-                selectedBranch={repo.defaultBranch}
+                selectedBranch={getBranchname()}
                 sshUrl={repo.sshUrl}
                 setRepos={setRepos}
                 reponame={reponame}
-                username={currentUserobj.username}
+                username={username}
               />
               <Button
                 variant="contained"

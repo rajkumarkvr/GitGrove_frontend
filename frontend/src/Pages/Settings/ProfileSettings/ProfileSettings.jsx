@@ -66,17 +66,15 @@ const ProfileSettings = () => {
     }
   };
 
-  // Handle Profile Image Change
   const handleProfileImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setProfileImage(imageUrl);
-      uploadImageToCloudinary(file); // Upload the image before updating profile
+      const localimageUrl = URL.createObjectURL(file);
+      setProfileImage(localimageUrl);
+      uploadImageToCloudinary(file);
     }
   };
 
-  // Validate Inputs & Save Changes
   const handleSaveChanges = async () => {
     let newError = { username: "", email: "", password: "", global: "" };
     let result = validateUsername(username);
@@ -112,17 +110,16 @@ const ProfileSettings = () => {
     }
 
     try {
-      // **Second API call: Update user profile**
       const oldusername = currentUser.username;
       const response = await axiosInstance.put(`service/users/update/profile`, {
         oldusername: oldusername,
         oldemail: currentUser.email,
         username,
         email,
-        profile_url: imageURL, // Ensure latest uploaded URL is used
+        profile_url: imageURL,
       });
 
-      clearCookieAndCurrentUser();
+      localStorage.removeItem("_user");
 
       if (response.status === 200) {
         console.log("Updated Profile:", response.data);
@@ -138,6 +135,7 @@ const ProfileSettings = () => {
         );
         console.log(res2);
         setSuccessMessage("Profile updated successfully!");
+        window.location.reload();
       } else {
         throw new Error("Unexpected profile update response");
       }

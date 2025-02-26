@@ -19,6 +19,7 @@ import { javascript } from "@codemirror/lang-javascript";
 import handleCopy from "../../CustomHooks/handleCopy";
 
 const FileEditor = ({ file }) => {
+  console.log(file);
   if (!file) return <Typography>Select a file to view its content</Typography>;
 
   const theme = useTheme(); // Get MUI theme

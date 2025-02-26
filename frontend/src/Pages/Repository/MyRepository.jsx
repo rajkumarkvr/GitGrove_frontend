@@ -21,7 +21,6 @@ import {
   useTheme,
   Chip,
 } from "@mui/material";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import StarIcon from "@mui/icons-material/Star"; // Imported Filled Star Icon
 import MoreVertIcon from "@mui/icons-material/MoreVert";

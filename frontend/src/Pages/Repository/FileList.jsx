@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   List,
   ListItem,
@@ -14,6 +14,7 @@ import getFormattedDateTime from "../../CustomHooks/getFormattedDateTime";
 
 const FileList = ({ files, reponame, username }) => {
   if (files == null || files.length === 0) return;
+
   return (
     <List>
       {files.map((file, index) => (
@@ -26,7 +27,6 @@ const FileList = ({ files, reponame, username }) => {
             justifyContent: "space-between",
           }}
         >
-          {/* Icon and Name with Link */}
           <Stack direction="row" alignItems="center" spacing={2}>
             <ListItemIcon>
               {file.type === "folder" ? (
@@ -48,8 +48,6 @@ const FileList = ({ files, reponame, username }) => {
               {file.name}
             </Typography>
           </Stack>
-
-          {/* Commit Message and Time */}
           <Stack
             direction="row"
             spacing={4}

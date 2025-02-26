@@ -146,26 +146,6 @@ function App() {
 
   const [selectedFile, setSelectedFile] = useState(null);
 
-  // useEffect(() => {
-  //   const fetchRepoInfo = async () => {
-  //     setLoading(true); // Start loading spinner before fetching data
-  //     console.log("Fetching");
-  //
-  //     try {
-  //       const response = await axiosInstance.get(
-  //         `/repo-info?username=${usrinfo.username}&reponame=${id}`
-  //       );
-  //       setRepos(response.data);
-  //       setLoading(false); // Stop loading spinner after fetching data
-  //       console.log(response.data);
-  //     } catch (error) {
-  //       setLoading(false); // Stop loading spinner after fetching data
-  //       console.log(error);
-  //     }
-  //   };
-
-  //   fetchRepoInfo();
-  // }, []);
   return (
     <BrowserRouter>
       <Routes>
@@ -204,7 +184,7 @@ function App() {
             }
           />
           <Route
-            path="/repo/createpullrequest"
+            path="/repo/createpullrequest/:username/:reponame"
             element={<PullRequestWrapper />}
           />
           <Route
@@ -263,7 +243,10 @@ function App() {
               </RequiredAuth>
             }
           />
-          <Route path="pull-requests" element={<ReviewAndMergeWrapper />} />
+          <Route
+            path="pull-requests/:username/:reponame/:id/:title/:creatorname/:sourceBranch/:targetBranch"
+            element={<ReviewAndMergeWrapper />}
+          />
           {/* Nested Settings Route */}
           <Route
             path="/settings"

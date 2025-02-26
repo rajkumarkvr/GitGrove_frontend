@@ -18,6 +18,7 @@ import { ExpandLess, ExpandMore, Search } from "@mui/icons-material";
 import DiffViewer from "react-diff-viewer";
 import { motion } from "framer-motion";
 import axiosInstance from "../../../axiosInstance";
+import BackLink from "../../../Components/BackLink";
 
 const DifferenceViewer = () => {
   const { username, reponame, commitHash } = useParams();
@@ -27,7 +28,6 @@ const DifferenceViewer = () => {
   const [expandedFolders, setExpandedFolders] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Customization options
   const [theme, setTheme] = useState("light");
   const [viewMode, setViewMode] = useState("split");
   const [showLineNumbers, setShowLineNumbers] = useState(true);
@@ -149,8 +149,8 @@ const DifferenceViewer = () => {
 
   return (
     <Box sx={{ display: "flex", height: "100vh", p: 2, gap: 2 }}>
-      {/* Left Side - File Explorer */}
       <Paper sx={{ width: "30%", p: 2, borderRadius: 2, overflowY: "auto" }}>
+        <BackLink to={`/repo/commits/${username}/${reponame}`} />
         <Typography variant="h6" sx={{ mb: 2 }}>
           File Explorer
         </Typography>

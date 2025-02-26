@@ -35,7 +35,7 @@ const dashBoardItems = [
   { text: "Explore", icon: <Search />, path: "explore" },
   { text: "Create Repo", icon: <AddCircle />, path: "create-repo" },
   { text: "Starred", icon: <Star />, path: "starred" },
-  { text: "Pull Requests", icon: <CompareArrows />, path: "pull-requests" },
+
   {
     text: "Profile & Settings",
     icon: <Settings />,

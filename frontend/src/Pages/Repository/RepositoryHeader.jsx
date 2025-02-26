@@ -11,7 +11,14 @@ import {
 } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
-import { People, Group, GroupAddSharp } from "@mui/icons-material";
+import {
+  People,
+  Group,
+  GroupAddSharp,
+  CompareArrows,
+  ViewAgendaSharp,
+  Visibility,
+} from "@mui/icons-material";
 import AddPeopleDialog from "./AddPeopleDialog";
 import axiosInstance from "../../axiosInstance";
 import mailServerAxiosInstance from "../../mailServerAxiosInstance";
@@ -20,17 +27,21 @@ import ViewCollaboratorsDialog from "./Collaborations/ViewCollaborators";
 import Lottie from "lottie-react";
 import handleCopy from "../../CustomHooks/handleCopy";
 import BackLink from "../../Components/BackLink";
+import { BiPlus } from "react-icons/bi";
+import { useNavigate } from "react-router-dom";
+import ViewPullRequestsDialog from "../PullRequest/ViewPullRequestsDialog";
 
 const RepositoryHeader = ({ repoName, sshUrl, username }) => {
   const [copied, setCopied] = useState(false);
   const [openAddPeople, setOpenAddPeople] = useState(false);
   const [open, setOpen] = useState(false);
+  const [viewPullRequests, setViewPullRequests] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const currentUser = getCurrentUser();
   const [animationPlaying, setAnimationPlaying] = useState(false);
   const [animationData, setAnimationData] = useState(null);
-
+  const navigate = useNavigate();
   useEffect(() => {
     fetch("/assets/download-anime.json")
       .then((response) => response.json())
@@ -38,6 +49,9 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
       .catch((error) => console.error("Error loading animation:", error));
   }, []);
 
+  const handleClose = () => {
+    setViewPullRequests(false); //
+  };
   const handleAddToRepository = (selectedUsers) => {
     console.log("Users added to repository:", selectedUsers);
     if (selectedUsers.length > 0) {
@@ -126,7 +140,19 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
       }, 1500);
     }
   };
-
+  console.log(currentUser.username == username);
+  const isACollaborator = async () => {
+    try {
+      const response = await axiosInstance.post(
+        `/service/user/collaborator?ownername=${username}&reponame=${repoName}&username=${currentUser?.username}`
+      );
+      console.log(response.data);
+      return response.data.isCollaborator;
+    } catch (error) {
+      console.error("Error checking if user is a collaborator:", error);
+      return false;
+    }
+  };
   return (
     <>
       <AppBar
@@ -141,8 +167,36 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
           </Typography>
 
           <Box sx={{ display: "flex", columnGap: 3 }}>
-            {currentUser.username == username && (
+            {(currentUser.username == username || isACollaborator()) && (
               <>
+                <Tooltip title="View pull requests">
+                  <Button
+                    color="error"
+                    variant="contained"
+                    startIcon={<Visibility />}
+                    sx={{ ml: 2 }}
+                    onClick={() => {
+                      setViewPullRequests(true);
+                    }}
+                  >
+                    View pull requests
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Make a pull request">
+                  <Button
+                    color="warning"
+                    variant="contained"
+                    startIcon={<BiPlus />}
+                    sx={{ ml: 2 }}
+                    onClick={() => {
+                      navigate(
+                        `/repo/createpullrequest/${username}/${repoName}`
+                      );
+                    }}
+                  >
+                    New Pull Request
+                  </Button>
+                </Tooltip>
                 <Tooltip title="View Collaborators">
                   <Button
                     color="secondary"
@@ -154,6 +208,10 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
                     View Collaborators
                   </Button>
                 </Tooltip>
+              </>
+            )}
+            {currentUser.username == username && (
+              <>
                 <Tooltip title="Add people">
                   <Button
                     color="success"
@@ -213,8 +271,12 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
         onClose={() => setCopied(false)}
         message="SSH URL copied!"
       />
-
-      {/* Add People Dialog */}
+      <ViewPullRequestsDialog
+        open={viewPullRequests}
+        handleClose={handleClose}
+        repoName={repoName}
+        username={username}
+      />
       <AddPeopleDialog
         open={openAddPeople}
         handleClose={() => setOpenAddPeople(false)}
@@ -228,6 +290,7 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
         open={open}
         handleClose={() => setOpen(false)}
         repoName={repoName}
+        username={username}
       />
     </>
   );

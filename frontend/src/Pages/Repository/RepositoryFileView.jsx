@@ -18,23 +18,67 @@ import BackLink from "../../Components/BackLink";
 
 const RepositoryFileView = () => {
   const [selectedFile, setSelectedFile] = useState(null);
+  const [fileContent, setFileContent] = useState("");
+  const [changed, setChanged] = useState(false);
   const [repos, setRepos] = useState({});
   const { reponame, username, filename } = useParams();
   const [loading, setLoading] = useState(true);
+
+  const getBranchname = () => {
+    if (sessionStorage.getItem("branch")) {
+      sessionStorage.setItem("fetchBranch", sessionStorage.getItem("branch"));
+      return sessionStorage.getItem("branch");
+    }
+    sessionStorage.setItem("fetchBranch", "master");
+    return "master";
+  };
   const usrinfo = getCurrentUser();
 
+  function change() {
+    setChanged((prev) => !prev);
+  }
+
+  useEffect(() => {
+    if (selectedFile && selectedFile.type === "file") {
+      console.log("Fetching content for:", selectedFile.filepath);
+      const getFileContent = async () => {
+        try {
+          console.log(username, reponame, getBranchname());
+          const response = await axiosInstance.get(
+            `/service/repo-info/file-content?username=${username}&reponame=${reponame}&branchname=${getBranchname()}&filename=${
+              selectedFile?.filepath
+            }`
+          );
+          console.log("API response:", response.data);
+          let newFileObj = { ...selectedFile, content: response.data };
+          console.log("Updated file object:", newFileObj);
+          setSelectedFile(newFileObj);
+        } catch (err) {
+          console.log("API error:", err);
+        }
+      };
+      getFileContent();
+    } else {
+      console.log("No file selected or not a file type");
+    }
+  }, [changed]);
   useEffect(() => {
     const fetchRepoInfo = async () => {
       setLoading(true);
       try {
         const response = await axiosInstance.get(
-          `service/repo-info?username=${username}&reponame=${reponame}&branchname=master`
+          `/service/repo-info/files?username=${username}&reponame=${reponame}&branchname=${getBranchname()}`
         );
         setRepos(response.data);
-
-        // Determine the correct file to open
         const fileToOpen = findFileOrFirstChild(response.data.files, filename);
-        setSelectedFile(fileToOpen);
+        const resp = await axiosInstance.get(
+          `/service/repo-info/file-content?username=${username}&reponame=${reponame}&branchname=${getBranchname()}&filename=${
+            fileToOpen?.filepath
+          }`
+        );
+        let newFileObj = { ...fileToOpen, content: resp.data };
+        console.log("Updated file object:", newFileObj);
+        setSelectedFile(newFileObj);
       } catch (error) {
         console.log(error);
       } finally {
@@ -43,7 +87,7 @@ const RepositoryFileView = () => {
     };
 
     fetchRepoInfo();
-  }, [username, reponame, filename]);
+  }, []);
 
   const findFileOrFirstChild = (files, name) => {
     const fileObj = files.find((file) => file.name === name);
@@ -67,7 +111,7 @@ const RepositoryFileView = () => {
         flexDirection: "column",
       }}
     >
-      {loading ? (
+      {/* {loading ? (
         <Skeleton variant="rectangular" height={40} sx={{ mb: 1 }} />
       ) : (
         <BranchSelector
@@ -77,7 +121,7 @@ const RepositoryFileView = () => {
           username={username}
           reponame={reponame}
         />
-      )}
+      )} */}
 
       <AppBar color="default" position="fixed" sx={{ paddingLeft: "240px" }}>
         <Toolbar>
@@ -87,7 +131,7 @@ const RepositoryFileView = () => {
             <>
               <BackLink to={`/repo/${username}/${reponame}`} />
               <Typography variant="h6">
-                {username} / {reponame}
+                {username} / {reponame} / {getBranchname()}
               </Typography>
             </>
           )}
@@ -128,6 +172,9 @@ const RepositoryFileView = () => {
               files={repos.files}
               onFileSelect={setSelectedFile}
               slectedFilename={selectedFile?.name}
+              selectedFile={selectedFile}
+              getBranchname={getBranchname}
+              onChanged={change}
             />
           )}
         </Box>

@@ -82,77 +82,55 @@ const ActiveSessions = () => {
   const [selectedSession, setSelectedSession] = useState(null);
   const [logoutSession, setLogoutSession] = useState(null);
   const theme = useTheme();
+  const fetchSessions = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/service/getactivesessions?userid=${getCurrentUser()?.username}`
+      );
+      let fetchedSessions = response.data.sessions || [];
 
-  useEffect(() => {
-    // // Dummy data for testing
-    // const dummySessions = [
-    //   {
-    //     sessionid: "abcd1234",
-    //     os_browser: "Windows - Google Chrome",
-    //     city_country: "New York, USA",
-    //     startedTime: "2025-02-15 10:30 AM",
-    //     ipaddress: "192.168.1.1",
-    //   },
-    //   {
-    //     sessionid: "xyz5678",
-    //     os_browser: "macOS - Apple Safari",
-    //     city_country: "Los Angeles, USA",
-    //     startedTime: "2025-02-14 08:45 PM",
-    //     ipaddress: "203.123.45.67",
-    //   },
-    //   {
-    //     sessionid: "pqr7890",
-    //     os_browser: "Linux - Mozilla Firefox",
-    //     city_country: "Berlin, Germany",
-    //     startedTime: "2025-02-13 02:20 PM",
-    //     ipaddress: "156.67.89.101",
-    //   },
-    // ];
-    const fetchSessions = async () => {
-      try {
-        const response = await axiosInstance.get(
-          `/service/getactivesessions?userid=${getCurrentUser()?.username}`
-        );
-        setSessions(response.data.sessions);
-        console.log(response.data);
-        setCurrentSessionId(getToken());
-        sessions.sort((a, b) => (a.sessionid === currentSessionId ? -1 : 1));
-        setSessions(sessions);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchSessions();
-  }, []);
+      setCurrentSessionId(getToken());
+
+      fetchedSessions = [...fetchedSessions].sort((a, b) =>
+        a.sessionid === currentSessionId ? -1 : 1
+      );
+
+      setSessions(fetchedSessions);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleLogout = (session, event) => {
-    event.stopPropagation(); // Prevent opening session details
+    event.stopPropagation();
     setLogoutSession(session);
   };
 
-  const confirmLogout = () => {
-    if (!logoutSession) return;
-    //api call
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchSessions();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
-    const handleLogoutSession = async () => {
-      try {
-        const response = await axiosInstance.post(
-          `/service/logoutsession?sessionid=${logoutSession.sessionid}`
-        );
-        console.log(response.data);
-        setCurrentSessionId(null);
-        setSessions(
-          sessions.filter((s) => s.sessionid !== logoutSession.sessionid)
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    handleLogoutSession();
-    setSessions(
-      sessions.filter((s) => s.sessionid !== logoutSession.sessionid)
-    );
-    setLogoutSession(null);
+  const confirmLogout = async () => {
+    if (!logoutSession) return;
+
+    try {
+      await axiosInstance.post(
+        `/service/logoutsession?sessionid=${logoutSession.sessionid}`
+      );
+
+      setSessions((prevSessions) =>
+        prevSessions.filter((s) => s.sessionid !== logoutSession.sessionid)
+      );
+      setLogoutSession(null);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

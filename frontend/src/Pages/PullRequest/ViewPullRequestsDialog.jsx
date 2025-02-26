@@ -19,45 +19,53 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { motion, AnimatePresence } from "framer-motion";
-import axiosInstance from "../../../axiosInstance";
-import getCurrentUser from "../../../Contexts/getCurrentUser";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../axiosInstance";
 
-const ViewCollaboratorsDialog = ({ open, handleClose, repoName, username }) => {
-  const theme = useTheme(); // Get the current theme mode
+const ViewPullRequestsDialog = ({ open, handleClose, repoName, username }) => {
+  const theme = useTheme();
+  const navigate = useNavigate();
   const [tabIndex, setTabIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [collaborators, setCollaborators] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
-  const currentUser = getCurrentUser();
+  const [pullRequests, setPullRequests] = useState([]);
+
   useEffect(() => {
     if (open) {
-      const fetchCollaborators = async () => {
+      const fetchPullRequests = async () => {
         try {
           setLoading(true);
           const response = await axiosInstance.get(
-            `/service/getcollaborators?reponame=${encodeURIComponent(
+            `/service/getpullrequests?reponame=${encodeURIComponent(
               repoName
             )}&ownername=${username}`
           );
-          const response2 = await axiosInstance.get(
-            `/service/getcollabrequests?reponame=${encodeURIComponent(
-              repoName
-            )}&ownername=${encodeURIComponent(username)}`
-          );
-
-          setCollaborators(response.data.users);
-          setPendingRequests(response2.data.users);
+          console.log(response.data.pullRequests);
+          setPullRequests(response.data.pullRequests);
           setLoading(false);
         } catch (err) {
-          console.log(err);
+          console.error("Error fetching pull requests:", err);
           setLoading(false);
         }
       };
-      fetchCollaborators();
+      fetchPullRequests();
     }
   }, [open, repoName]);
 
-  // Function to render skeleton loaders
+  const openPRs = pullRequests.filter((pr) => pr.status === "OPEN");
+  const closedPRs = pullRequests.filter(
+    (pr) => pr.status === "MERGED" || pr.status === "CLOSED"
+  );
+  const handleOpenPRClick = (id, details) => {
+    navigate(
+      `/pull-requests/${username}/${repoName}/${id}/${encodeURIComponent(
+        encodeURIComponent(details.title)
+      )}/${details.createrName}/${encodeURIComponent(
+        details.sourceBranch
+      )}/${encodeURIComponent(details.targetBranch)}`
+    );
+  };
+
+  // Skeleton Loaders for List
   const renderSkeletonList = (numItems = 4) => (
     <List>
       {Array.from({ length: numItems }).map((_, index) => (
@@ -69,21 +77,17 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName, username }) => {
             <Skeleton variant="circular" width={40} height={40} />
           </ListItemAvatar>
           <ListItemText
-            primary={<Skeleton width="40%" />}
-            secondary={<Skeleton width="60%" />}
+            primary={<Skeleton width="50%" />}
+            secondary={<Skeleton width="70%" />}
           />
-          {tabIndex === 1 && (
-            <Skeleton variant="rectangular" width={60} height={24} />
-          )}
+          <Skeleton variant="rectangular" width={80} height={24} />
         </ListItem>
       ))}
     </List>
   );
 
-  console.log(currentUser.username === username);
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      {/* Animated Wrapper */}
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -99,7 +103,7 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName, username }) => {
             color: theme.palette.text.primary,
           }}
         >
-          View Collaborators - {repoName}
+          View Pull Requests - {repoName}
           <IconButton
             onClick={handleClose}
             sx={{ color: theme.palette.text.primary }}
@@ -128,16 +132,16 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName, username }) => {
               "& .Mui-selected": { color: theme.palette.primary.main },
             }}
           >
-            <Tab label="Collaborators" />
-
-            {currentUser.username === username && <Tab label="Requests" />}
+            <Tab label="Open" />
+            <Tab label="Closed" />
           </Tabs>
         </Paper>
 
-        {/* Content Section */}
         <DialogContent
           sx={{
-            minHeight: "350px",
+            minHeight: "40vh",
+            maxHeight: "40vh",
+            overflowY: "auto",
             display: "flex",
             flexDirection: "column",
             backgroundColor: theme.palette.background.default,
@@ -146,7 +150,7 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName, username }) => {
           <AnimatePresence mode="wait">
             {tabIndex === 0 ? (
               <motion.div
-                key="collaborators"
+                key="open-prs"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
@@ -154,23 +158,36 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName, username }) => {
               >
                 {loading ? (
                   renderSkeletonList()
-                ) : collaborators.length > 0 ? (
+                ) : openPRs.length > 0 ? (
                   <List>
-                    {collaborators.map((user) => (
+                    {openPRs.map((pr) => (
                       <ListItem
-                        key={user.id}
+                        key={pr.id}
                         sx={{
                           borderBottom: `1px solid ${theme.palette.divider}`,
+                          cursor: "pointer",
+                          "&:hover": {
+                            backgroundColor: theme.palette.action.hover,
+                          },
                         }}
+                        onClick={() =>
+                          handleOpenPRClick(pr.id, {
+                            title: pr.title,
+                            sourceBranch: pr.sourceBranch,
+                            targetBranch: pr.targetBranch,
+                            createrName: pr.createrName,
+                          })
+                        }
                       >
                         <ListItemAvatar>
-                          <Avatar src={user.avatar} alt={user.username} />
+                          <Avatar src={pr.createrAvatar} alt={pr.createrName} />
                         </ListItemAvatar>
                         <ListItemText
-                          primary={user.username}
-                          secondary={user.email}
+                          primary={pr.title}
+                          secondary={`${pr.createrName} • ${pr.sourceBranch} → ${pr.targetBranch}`}
                           sx={{ color: theme.palette.text.primary }}
                         />
+                        <Chip label="Open" color="success" />
                       </ListItem>
                     ))}
                   </List>
@@ -179,38 +196,41 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName, username }) => {
                     align="center"
                     sx={{ mt: 2, color: theme.palette.text.secondary }}
                   >
-                    No collaborators found.
+                    No open pull requests.
                   </Typography>
                 )}
               </motion.div>
             ) : (
               <motion.div
-                key="requests"
+                key="closed-prs"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
               >
                 {loading ? (
-                  renderSkeletonList(2)
-                ) : pendingRequests.length > 0 ? (
+                  renderSkeletonList()
+                ) : closedPRs.length > 0 ? (
                   <List>
-                    {pendingRequests.map((user) => (
+                    {closedPRs.map((pr) => (
                       <ListItem
-                        key={user.id}
+                        key={pr.id}
                         sx={{
                           borderBottom: `1px solid ${theme.palette.divider}`,
                         }}
                       >
                         <ListItemAvatar>
-                          <Avatar src={user.avatar} alt={user.username} />
+                          <Avatar src={pr.createrAvatar} alt={pr.createrName} />
                         </ListItemAvatar>
                         <ListItemText
-                          primary={user.username}
-                          secondary={user.email}
+                          primary={pr.title}
+                          secondary={`${pr.createrName} • ${pr.sourceBranch} → ${pr.targetBranch}`}
                           sx={{ color: theme.palette.text.primary }}
                         />
-                        <Chip label="Pending" color="warning" />
+                        <Chip
+                          label={pr.status}
+                          color={pr.status === "MERGED" ? "primary" : "error"}
+                        />
                       </ListItem>
                     ))}
                   </List>
@@ -219,7 +239,7 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName, username }) => {
                     align="center"
                     sx={{ mt: 2, color: theme.palette.text.secondary }}
                   >
-                    No pending requests.
+                    No closed pull requests.
                   </Typography>
                 )}
               </motion.div>
@@ -231,4 +251,4 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName, username }) => {
   );
 };
 
-export default ViewCollaboratorsDialog;
+export default ViewPullRequestsDialog;

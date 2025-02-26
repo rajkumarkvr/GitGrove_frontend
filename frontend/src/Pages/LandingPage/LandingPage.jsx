@@ -48,18 +48,18 @@ const LandingPage = () => {
   const [showSpinner, setShowSpinner] = useState(false);
   const [randomStart, setRandomStart] = useState({ x: 0, y: 0 });
 
-  useEffect(() => {
-    const randomX = Math.random() * window.innerWidth - 100;
-    const randomY = Math.random() * window.innerHeight - 100;
-    setRandomStart({ x: randomX, y: randomY });
+  // useEffect(() => {
+  //   const randomX = Math.random() * window.innerWidth - 100;
+  //   const randomY = Math.random() * window.innerHeight - 100;
+  //   setRandomStart({ x: randomX, y: randomY });
 
-    const timer = setTimeout(() => {
-      setShowSpinner(true);
-      setCurrentLogo(spinnerLogo);
-    }, 3000);
+  //   const timer = setTimeout(() => {
+  //     setShowSpinner(true);
+  //     setCurrentLogo(spinnerLogo);
+  //   }, 3000);
 
-    return () => clearTimeout(timer);
-  }, [spinnerLogo]);
+  //   return () => clearTimeout(timer);
+  // }, [spinnerLogo]);
 
   return (
     <Box
@@ -79,36 +79,36 @@ const LandingPage = () => {
           position: "relative",
         }}
       >
-        <AnimatePresence>
-          {!showSpinner ? (
-            <motion.img
-              key="static-logo"
-              src={currentLogo}
-              alt="GitGrove Logo"
-              height="200"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
-            />
-          ) : (
-            <motion.img
-              key="spinner-logo"
-              src={currentLogo}
-              alt="GitGrove Spinner"
-              height="100"
-              initial={{
-                x: randomStart.x,
-                y: randomStart.y,
-                opacity: 0,
-                scale: 0.5,
-              }}
-              animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-              transition={{ duration: 2, ease: "easeOut" }}
-              className="spin-delay"
-            />
+        {/* <AnimatePresence> */}
+
+        <motion.img
+          key="static-logo"
+          src={currentLogo}
+          alt="GitGrove Logo"
+          height="200"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+        />
+        {/* // ) : (
+          //   <motion.img
+          //     key="spinner-logo"
+          //     src={currentLogo}
+          //     alt="GitGrove Spinner"
+          //     height="100"
+          //     initial={{
+          //       x: randomStart.x,
+          //       y: randomStart.y,
+          //       opacity: 0,
+          //       scale: 0.5,
+          //     }}
+          //     animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+          //     transition={{ duration: 2, ease: "easeOut" }}
+          //     className="spin-delay"
+          //   />
           )}
-        </AnimatePresence>
+        </AnimatePresence> */}
 
         <Typography variant="h3" fontWeight="bold" mt={2}>
           Code, track, and never look back!

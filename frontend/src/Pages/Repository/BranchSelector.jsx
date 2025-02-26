@@ -33,13 +33,18 @@ const BranchSelector = ({
 
   const handleOpen = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-
+  // useEffect(() => {
+  //   if (sessionStorage.getItem("branch")) {
+  //     setCurrentBranch(sessionStorage.getItem("branch"));
+  //   }
+  // }, []);
   useEffect(() => {
     sessionStorage.setItem("branch", currentBranch);
   }, [currentBranch]);
   const handleBranchSelect = (branch) => {
+    console.log("exe");
     setCurrentBranch(branch);
-
+    sessionStorage.setItem("fetchBranch", branch);
     const fetchBranchOrientedData = async () => {
       try {
         const response = await axiosInstance.get(
@@ -134,7 +139,7 @@ const BranchSelector = ({
           <List
             sx={{
               maxHeight: 200,
-              overflowY: filteredBranches.length > 5 ? "auto" : "hidden",
+              overflowY: "auto",
               mt: 1,
               borderTop: `1px solid ${theme.palette.divider}`,
             }}

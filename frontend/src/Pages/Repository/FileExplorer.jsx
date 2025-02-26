@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   List,
   ListItem,
@@ -15,15 +15,40 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { motion } from "framer-motion";
 import BranchSelector from "./BranchSelector";
+import axiosInstance from "../../axiosInstance";
 
-const FileExplorer = ({ files, onFileSelect, slectedFilename = "" }) => {
+const FileExplorer = ({
+  files,
+  onFileSelect,
+  slectedFilename = "",
+  selectedFile,
+  onChanged,
+}) => {
   const [openFolders, setOpenFolders] = useState({});
   const [search, setSearch] = useState("");
   const [selectedFileName, setSelectedFileName] = useState(slectedFilename);
+  const [selectedFileNew, setSelectedFileNew] = useState({});
   const theme = useTheme();
+
+  const getBranchname = () => {
+    if (sessionStorage.getItem("branch")) {
+      sessionStorage.setItem("fetchBranch", sessionStorage.getItem("branch"));
+      return sessionStorage.getItem("branch");
+    }
+    sessionStorage.setItem("fetchBranch", "master");
+    return "master";
+  };
   const handleFileSelect = (file) => {
+    console.log("calling");
+
+    // setSelectedFileName(file);
     setSelectedFileName(file.name);
+    console.log("printing" + JSON.stringify(file));
+
     onFileSelect(file);
+    onChanged();
+
+    // setSelectedFileNew((prev) => !prev);
   };
   const toggleFolder = useCallback((name) => {
     setOpenFolders((prev) => ({ ...prev, [name]: !prev[name] }));
@@ -117,6 +142,7 @@ const FileExplorer = ({ files, onFileSelect, slectedFilename = "" }) => {
                         <FileExplorer
                           files={file.children}
                           onFileSelect={onFileSelect}
+                          onChanged={onChanged}
                         />
                       </Box>
                     </Collapse>
@@ -134,7 +160,7 @@ const FileExplorer = ({ files, onFileSelect, slectedFilename = "" }) => {
                       }}
                       sx={{
                         backgroundColor:
-                          selectedFileName === file.name
+                          selectedFileNew === file.name
                             ? theme.palette.mode === "dark"
                               ? theme.palette.grey[800]
                               : theme.palette.grey[300]
