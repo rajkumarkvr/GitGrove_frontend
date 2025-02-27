@@ -39,7 +39,7 @@ const MyRepositories = ({ api }) => {
   const [loading, setLoading] = useState(true);
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [selectedRepo, setSelectedRepo] = useState(null);
-  const [starredRepos, setStarredRepos] = useState(new Set()); // Store starred repo IDs
+  const [starredRepos, setStarredRepos] = useState(new Set());
   const navigate = useNavigate();
   const theme = useTheme();
 
@@ -142,7 +142,9 @@ const MyRepositories = ({ api }) => {
         color="default"
         sx={{ top: 0, left: 0, right: 0, zIndex: 1000, boxShadow: 2 }}
       >
-        <Toolbar sx={{ display: "flex", justifyContent: "space-around" }}>
+        <Toolbar
+          sx={{ display: "flex", justifyContent: "space-around", ml: "80px" }}
+        >
           <Stack direction="row" spacing={20} alignItems="center">
             <TextField
               label="Search Repositories"
@@ -163,7 +165,7 @@ const MyRepositories = ({ api }) => {
                 <MenuItem value="stars">Stars</MenuItem>
               </Select>
             </FormControl>
-            <CreateRepositoryButton />
+            <CreateRepositoryButton text={"New"} />
           </Stack>
         </Toolbar>
       </AppBar>

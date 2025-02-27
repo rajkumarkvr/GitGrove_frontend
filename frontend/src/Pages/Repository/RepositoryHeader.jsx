@@ -169,11 +169,17 @@ const RepositoryHeader = ({ repoName, sshUrl, username }) => {
         color="default"
         sx={{ boxShadow: 2, padding: 1 }}
       >
-        <Toolbar sx={{ display: "flex", justifyContent: "space-around" }}>
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: "space-around",
+            marginLeft: "150px",
+          }}
+        >
           <BackLink to="/repositories" />
-          <Typography variant="h6">
+          {/* <Typography variant="h6">
             {username} / {repoName}
-          </Typography>
+          </Typography> */}
 
           <Box sx={{ display: "flex", columnGap: 3 }}>
             {(currentUser.username == username || collab) && (

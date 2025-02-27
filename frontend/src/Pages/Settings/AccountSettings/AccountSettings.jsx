@@ -100,7 +100,7 @@ const AccountSettings = () => {
             Hello, {getCurrentUser()?.username}
           </Typography>
           <Typography variant="body2" sx={{ color: "text.secondary", mb: 3 }}>
-            Manage your account settings here.
+            Manage your account settings here
           </Typography>
 
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -112,7 +112,7 @@ const AccountSettings = () => {
               startIcon={<LogoutIcon />}
               onClick={() => setLogoutDialogOpen(true)}
             >
-              Logout
+              Log out
             </Button>
           </motion.div>
 

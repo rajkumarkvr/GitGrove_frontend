@@ -273,7 +273,7 @@ const ProfileSettings = () => {
         component={motion.button}
         whileHover={{ scale: 1.05 }}
       >
-        {loading ? "Updating..." : "Save Changes"}
+        {loading ? "Updating..." : "Save"}
       </Button>
 
       {/* Success Snackbar */}

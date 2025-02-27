@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Stack } from "@mui/material";
 import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 
-const CreateRepositoryButton = () => {
+const CreateRepositoryButton = ({ text }) => {
   const navigate = useNavigate();
 
   return (
@@ -19,7 +19,7 @@ const CreateRepositoryButton = () => {
           borderRadius: "8px",
         }}
       >
-        Create Repository
+        {text}
       </Button>
     </Stack>
   );
