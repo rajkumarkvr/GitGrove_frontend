@@ -143,7 +143,7 @@ const Starred = () => {
                 sx={{ minWidth: 250 }}
               >
                 <MenuItem value="updated">Last Updated</MenuItem>
-                <MenuItem value="stars">Stars</MenuItem>
+                <MenuItem value="stars">Ratings</MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -218,7 +218,7 @@ const Starred = () => {
                     {repo.name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {repo.description || "No description available."}
+                    {repo.description || "No description available"}
                   </Typography>
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="caption" fontWeight="bold">

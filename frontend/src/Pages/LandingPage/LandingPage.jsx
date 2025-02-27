@@ -13,27 +13,27 @@ import GitSpinnerLight from "/images/GitgroveWhite.svg";
 const features = [
   {
     title: "Version Control",
-    description: "Push, Pull, Clone seamlessly.",
+    description: "Push, Pull, Clone seamlessly",
     icon: "🚀",
   },
   {
     title: "Collaborate Easily",
-    description: "Team up with members instantly.",
+    description: "Team up with members instantly",
     icon: "👥",
   },
   {
     title: "Track Changes",
-    description: "Monitor and revert edits smoothly.",
+    description: "Monitor and revert edits smoothly",
     icon: "🔄",
   },
   {
     title: "Secure Repositories",
-    description: "Keep your code safe and accessible.",
+    description: "Keep your code safe and accessible",
     icon: "🔐",
   },
   {
     title: "Intuitive UI",
-    description: "Simple yet powerful interface.",
+    description: "Simple yet powerful interface",
     icon: "✨",
   },
 ];
@@ -111,7 +111,7 @@ const LandingPage = () => {
         </AnimatePresence> */}
 
         <Typography variant="h3" fontWeight="bold" mt={2}>
-          Code, track, and never look back!
+          Branch out, push forward!
         </Typography>
         <Typography variant="h6" color="text.secondary" mt={1}>
           GitGrove: Because Committing Here is Easy!

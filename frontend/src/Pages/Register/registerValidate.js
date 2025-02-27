@@ -10,16 +10,16 @@ function validateRegistrationData(user, setErrors) {
   }
 
   if (!user.email.trim()) {
-    errors.email = "Email address is required";
+    errors.email = "Email address required";
   } else if (!emailRegex.test(user.email)) {
     errors.email = "Invalid email address";
   }
   if (!user.password.trim() || !user.confirmPassword.trim()) {
-    errors.password = "Password is required";
+    errors.password = "Password required";
   } else if (user.confirmPassword != user.password) {
     errors.confirmPassword = "Passwords do not match";
   } else if (user.password.length < 8) {
-    errors.confirmPassword = "Password must be at least 8 characters long";
+    errors.confirmPassword = "password must have eight characters";
   }
   setErrors(errors);
   return Object.keys(errors).length === 0;

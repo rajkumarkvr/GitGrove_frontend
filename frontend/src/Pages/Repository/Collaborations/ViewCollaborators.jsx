@@ -179,7 +179,7 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName, username }) => {
                     align="center"
                     sx={{ mt: 2, color: theme.palette.text.secondary }}
                   >
-                    No collaborators found.
+                    No collaborators found
                   </Typography>
                 )}
               </motion.div>
@@ -219,7 +219,7 @@ const ViewCollaboratorsDialog = ({ open, handleClose, repoName, username }) => {
                     align="center"
                     sx={{ mt: 2, color: theme.palette.text.secondary }}
                   >
-                    No pending requests.
+                    No pending requests
                   </Typography>
                 )}
               </motion.div>

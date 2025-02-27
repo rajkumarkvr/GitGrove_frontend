@@ -248,7 +248,7 @@ const ReviewAndMerge = ({
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <CheckCircle sx={{ color: theme.palette.success.main }} />
             <Typography variant="body2" color="text.primary">
-              ✅ Auto-merging is possible.
+              ✅ Auto-merging is possible
             </Typography>
           </Box>
         ) : (
@@ -256,7 +256,7 @@ const ReviewAndMerge = ({
             <ErrorOutline sx={{ color: theme.palette.error.main }} />
             <Typography variant="body2">
               ❌ Conflict detected. Choose a resolution strategy or fix it
-              manually.
+              manually
             </Typography>
             <Button
               variant="contained"
@@ -286,7 +286,7 @@ const ReviewAndMerge = ({
         </Typography>
         <Divider sx={{ marginBottom: theme.spacing(1) }} />
         {comments.length === 0 ? (
-          <Typography color="textSecondary">No comments yet.</Typography>
+          <Typography color="textSecondary">No comments yet</Typography>
         ) : (
           comments.map((comment, index) => (
             <Box

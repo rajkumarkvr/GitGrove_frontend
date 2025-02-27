@@ -269,10 +269,10 @@ const Explore = () => {
           <Select
             value={sorting}
             onChange={(e) => setSorting(e.target.value)}
-            startAdornment={<ArrowDropDownIcon />}
+           
           >
-            <MenuItem value="most_stars">Most Stars</MenuItem>
-            <MenuItem value="least_stars">Least Stars</MenuItem>
+            <MenuItem value="most_stars">Most rated</MenuItem>
+            <MenuItem value="least_stars">Least rated</MenuItem>
             <MenuItem value="recently_updated">Recently Updated</MenuItem>
           </Select>
         </FormControl>

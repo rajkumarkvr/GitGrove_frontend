@@ -162,7 +162,7 @@ const MyRepositories = ({ api }) => {
                 sx={{ minWidth: 250 }}
               >
                 <MenuItem value="updated">Last Updated</MenuItem>
-                <MenuItem value="stars">Stars</MenuItem>
+                <MenuItem value="stars">Ratings</MenuItem>
               </Select>
             </FormControl>
             <CreateRepositoryButton text={"New"} />
@@ -247,7 +247,7 @@ const MyRepositories = ({ api }) => {
                   </Box>
 
                   <Typography variant="body2" color="text.secondary">
-                    {repo.description || "No description available."}
+                    {repo.description || "No description available"}
                   </Typography>
 
                   <Box sx={{ mt: 2, display: "flex", flexDirection: "column" }}>
@@ -310,7 +310,7 @@ const MyRepositories = ({ api }) => {
           ))
         ) : (
           <Typography variant="h6" textAlign="center" color="text.secondary">
-            No repositories found.
+            No repositories found
           </Typography>
         )}
       </Box>

@@ -137,7 +137,7 @@ const CreatePullRequest = ({
         fullWidth
         variant="outlined"
         margin="normal"
-        helperText="Provide a brief description of your changes for the reviewers."
+        helperText="Provide a brief description of your changes for the reviewers"
         required
       />
 

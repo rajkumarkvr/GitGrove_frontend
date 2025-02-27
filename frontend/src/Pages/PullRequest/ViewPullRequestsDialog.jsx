@@ -196,7 +196,7 @@ const ViewPullRequestsDialog = ({ open, handleClose, repoName, username }) => {
                     align="center"
                     sx={{ mt: 2, color: theme.palette.text.secondary }}
                   >
-                    No open pull requests.
+                    No open pull requests
                   </Typography>
                 )}
               </motion.div>
@@ -239,7 +239,7 @@ const ViewPullRequestsDialog = ({ open, handleClose, repoName, username }) => {
                     align="center"
                     sx={{ mt: 2, color: theme.palette.text.secondary }}
                   >
-                    No closed pull requests.
+                    No closed pull requests
                   </Typography>
                 )}
               </motion.div>

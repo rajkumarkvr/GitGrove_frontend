@@ -189,7 +189,7 @@ const Login = () => {
           }}
         />
         <Typography variant="body2" sx={{ mt: 1 }}>
-          New user?
+          New user? {" "}
           <Link
             sx={{ cursor: "pointer" }}
             onClick={() => navigate("/register")}

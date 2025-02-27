@@ -104,7 +104,7 @@ const ResetPassword = () => {
         <Typography variant="body2" sx={{ mt: 1 }}>
           Remember your password?{" "}
           <Link sx={{ cursor: "pointer" }} onClick={() => navigate("/login")}>
-            Login here
+            Login
           </Link>
         </Typography>
       </Box>
