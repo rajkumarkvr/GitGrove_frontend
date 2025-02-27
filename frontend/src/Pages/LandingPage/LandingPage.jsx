@@ -89,7 +89,7 @@ const LandingPage = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 1.5 }}
         />
         {/* // ) : (
           //   <motion.img
@@ -110,8 +110,8 @@ const LandingPage = () => {
           )}
         </AnimatePresence> */}
 
-        <Typography variant="h3" fontWeight="bold" mt={2}>
-          Branch out, push forward!
+        <Typography variant="h4" fontWeight="bold" mt={2}>
+          Code, Collaborate and track changes
         </Typography>
         <Typography variant="h6" color="text.secondary" mt={1}>
           GitGrove: Because Committing Here is Easy!
