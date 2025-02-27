@@ -59,7 +59,7 @@ const Dashboard = ({ toggleTheme }) => {
 
   const logoSrc =
     theme.palette.mode === "dark"
-      ? "/images/logotext/LogoTextFullWhite.svg"
+      ? "/images/logotext/LogoTextPrimary.svg"
       : "/images/logotext/LogoTextDark.svg";
   // const currentUser = getCurrentUser();
   return (

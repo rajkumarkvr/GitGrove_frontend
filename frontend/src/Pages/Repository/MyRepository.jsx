@@ -32,6 +32,7 @@ import getCurrentUser from "../../Contexts/getCurrentUser";
 import getFormattedDateTime from "../../CustomHooks/getFormattedDateTime";
 import { FolderOpen } from "@mui/icons-material";
 import CreateRepositoryButton from "./CreateRepositoryButton";
+import NoRepositoriesFound from "./NoRepositoryMessage/NoRepositoriesFound";
 const MyRepositories = ({ api }) => {
   const [repositories, setRepositories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -120,11 +121,7 @@ const MyRepositories = ({ api }) => {
     }
   };
   if (repositories == null || repositories.length == 0) {
-    return (
-      <Typography variant="h6" textAlign="center" color="text.secondary">
-        No repositories found.
-      </Typography>
-    );
+    return <NoRepositoriesFound />;
   }
   const filteredRepos = repositories
     .filter((repo) =>
@@ -309,9 +306,11 @@ const MyRepositories = ({ api }) => {
             </motion.div>
           ))
         ) : (
-          <Typography variant="h6" textAlign="center" color="text.secondary">
-            No repositories found.
-          </Typography>
+          // <Typo
+          // graphy variant="h6" textAlign="center" color="text.secondary">
+          //   No repositories found.
+          // </Typo>
+          <NoRepositoriesFound />
         )}
       </Box>
     </Container>

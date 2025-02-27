@@ -45,7 +45,7 @@ export const MainNavBar = () => {
             gap: 1,
             position: "fixed",
             right: 25,
-            p: 0.5,
+            p: 0.8,
             mt: 1,
             borderRadius: "8px",
             bgcolor: theme.palette.mode === "dark" ? "grey.800" : "grey.100",
