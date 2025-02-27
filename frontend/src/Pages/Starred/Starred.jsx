@@ -26,6 +26,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../../axiosInstance";
 import getCurrentUser from "../../Contexts/getCurrentUser";
 import getFormattedDateTime from "../../CustomHooks/getFormattedDateTime";
+import NoStarredRepositories from "./NoStarredRepositories";
 
 const Starred = () => {
   const [repositories, setRepositories] = useState([]);
@@ -66,9 +67,10 @@ const Starred = () => {
 
   if (repositories == null || repositories.length == 0) {
     return (
-      <Typography variant="h6" textAlign="center" color="text.secondary">
-        You have not starred any repositories yet!
-      </Typography>
+      // <Typography variant="h6" textAlign="center" color="text.secondary">
+      //   You have not starred any repositories yet!
+      // </Typography>
+      <NoStarredRepositories />
     );
   }
   const filteredRepos = repositories

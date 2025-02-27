@@ -32,6 +32,7 @@ import { PullRequestWrapper } from "./Pages/PullRequest/PullRequestWrapper";
 import { ReviewAndMergeWrapper } from "./Pages/PullRequest/ReviewAndMergeWrapper";
 import AddSshKey from "./Pages/Settings/AddSshKey/AddSshKey";
 import UploadAndCommitWrapper from "./Pages/UploadFiles/UploadAndCommitWrapper";
+import NotFound404 from "./Components/NotFound404";
 // import HomeIcon from "@mui/icons-material/Home";
 //1 unit = 8px by default in MUI
 // const repo = {
@@ -327,6 +328,7 @@ function App() {
           path="auth/collaboration-invite"
           element={<CollaborationInvite />}
         />
+        <Route path="*" element={<NotFound404 />} />
       </Routes>
     </BrowserRouter>
   );
